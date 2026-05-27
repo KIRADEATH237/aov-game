@@ -3,205 +3,175 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>GameZone — Joue avec tes amis</title>
+<title>GameZone — Jeux entre amis</title>
 <script src="/socket.io/socket.io.js"></script>
 <style>
-:root {
-  --bg: #0f0f1a;
-  --card: #1a1a2e;
-  --card2: #16213e;
-  --accent: #7c3aed;
-  --accent2: #a855f7;
-  --text: #f1f5f9;
-  --muted: #94a3b8;
-  --border: #2d2d4e;
-  --radius: 16px;
-  --success: #10b981;
-  --danger: #ef4444;
-}
-[data-theme="friend"] { --accent:#7c3aed; --accent2:#a855f7; --glow:rgba(124,58,237,0.3); }
-[data-theme="crush"]  { --accent:#e11d48; --accent2:#fb7185; --glow:rgba(225,29,72,0.3); }
-[data-theme="dare"]   { --accent:#ea580c; --accent2:#fb923c; --glow:rgba(234,88,12,0.3); }
-[data-theme="wild"]   { --accent:#0891b2; --accent2:#22d3ee; --glow:rgba(8,145,178,0.3); }
-
+:root{--bg:#0f0f1a;--card:#1a1a2e;--card2:#16213e;--accent:#7c3aed;--accent2:#a855f7;--text:#f1f5f9;--muted:#94a3b8;--border:#2d2d4e;--radius:16px;--glow:rgba(124,58,237,0.3);}
+[data-theme="aov"]{--accent:#7c3aed;--accent2:#a855f7;--glow:rgba(124,58,237,0.3);}
+[data-theme="quiz"]{--accent:#0891b2;--accent2:#22d3ee;--glow:rgba(8,145,178,0.3);}
+[data-theme="qui"]{--accent:#059669;--accent2:#34d399;--glow:rgba(5,150,105,0.3);}
+[data-theme="crush"]{--accent:#e11d48;--accent2:#fb7185;--glow:rgba(225,29,72,0.3);}
+[data-theme="dare"]{--accent:#ea580c;--accent2:#fb923c;--glow:rgba(234,88,12,0.3);}
+[data-theme="wild"]{--accent:#0891b2;--accent2:#22d3ee;--glow:rgba(8,145,178,0.3);}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;}
-#app{width:100%;max-width:440px;}
-
-.screen{display:none;}
-.screen.active{display:block;}
-
-/* CARDS */
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:1rem;}
+#app{width:100%;max-width:440px;padding-bottom:2rem;}
+.screen{display:none;}.screen.active{display:block;}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;}
-.card-glow{box-shadow:0 0 30px var(--glow,rgba(124,58,237,0.2));}
-
-/* TYPOGRAPHY */
 h1{font-size:26px;font-weight:700;background:linear-gradient(135deg,var(--accent2),var(--text));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 h2{font-size:18px;font-weight:600;color:var(--text);margin-bottom:1rem;}
 p{color:var(--muted);font-size:14px;line-height:1.6;}
 label{font-size:11px;font-weight:600;letter-spacing:1px;color:var(--muted);text-transform:uppercase;}
-
-/* INPUTS */
-input[type=text],select,textarea{
-  width:100%;padding:12px 14px;
-  background:#0f0f1a;border:1px solid var(--border);
-  border-radius:10px;font-size:15px;color:var(--text);
-  outline:none;margin-top:6px;transition:border 0.2s;
-  font-family:inherit;
-}
+input[type=text],select,textarea{width:100%;padding:12px 14px;background:#0f0f1a;border:1px solid var(--border);border-radius:10px;font-size:15px;color:var(--text);outline:none;margin-top:6px;transition:border 0.2s;font-family:inherit;}
 input[type=text]:focus,select:focus,textarea:focus{border-color:var(--accent);}
 textarea{resize:none;min-height:80px;}
 select option{background:#1a1a2e;}
-
-/* BUTTONS */
 .btn{width:100%;padding:13px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;margin-top:10px;transition:all 0.15s;font-family:inherit;}
 .btn:active{transform:scale(0.97);}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 15px var(--glow,rgba(124,58,237,0.4));}
-.btn-primary:hover{opacity:0.9;box-shadow:0 6px 20px var(--glow,rgba(124,58,237,0.5));}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 15px var(--glow);}
+.btn-primary:hover{opacity:0.9;}
 .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);}
 .btn-ghost:hover{background:var(--card2);}
-.btn-action{background:linear-gradient(135deg,#e11d48,#fb7185);color:#fff;padding:14px;}
-.btn-truth{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;padding:14px;}
-.btn-sm{padding:8px 16px;width:auto;font-size:13px;margin-top:0;}
-
-/* BADGE */
+.btn-action{background:linear-gradient(135deg,#e11d48,#fb7185);color:#fff;padding:14px;font-size:15px;font-weight:600;border:none;border-radius:10px;cursor:pointer;width:100%;transition:all 0.15s;}
+.btn-truth{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;padding:14px;font-size:15px;font-weight:600;border:none;border-radius:10px;cursor:pointer;width:100%;transition:all 0.15s;}
+.btn-sm{padding:9px 18px;width:auto;font-size:13px;margin-top:0;display:inline-block;}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;}
 .badge-green{background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);}
 .badge-pink{background:rgba(251,113,133,0.15);color:#fb7185;border:1px solid rgba(251,113,133,0.3);}
 .badge-purple{background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);}
-.badge-orange{background:rgba(251,146,60,0.15);color:#fb923c;border:1px solid rgba(251,146,60,0.3);}
-.badge-cyan{background:rgba(34,211,238,0.15);color:#22d3ee;border:1px solid rgba(34,211,238,0.3);}
-
-/* AVATAR */
 .avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;}
 .av1{background:rgba(124,58,237,0.2);color:#a855f7;border:1px solid rgba(168,85,247,0.4);}
 .av2{background:rgba(225,29,72,0.2);color:#fb7185;border:1px solid rgba(251,113,133,0.4);}
 .av-wait{background:var(--card2);color:var(--muted);}
-
-/* PLAYER ROW */
 .player-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
 .player-row:last-child{border-bottom:none;}
-
-/* CODE BOX */
 .code-box{font-size:44px;font-weight:800;letter-spacing:12px;text-align:center;padding:1.25rem;background:#0f0f1a;border:1px solid var(--border);border-radius:12px;color:var(--accent2);font-family:monospace;}
-
-/* THEME CARDS */
+.share-box{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:10px 14px;font-size:12px;color:#10b981;margin:0.75rem 0;word-break:break-all;cursor:pointer;}
+.share-box:hover{background:rgba(16,185,129,0.15);}
 .theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:0.75rem;}
-.theme-card{padding:1rem;border-radius:12px;border:2px solid var(--border);cursor:pointer;transition:all 0.2s;background:var(--card2);text-align:center;}
-.theme-card:hover{transform:translateY(-2px);}
-.theme-card.selected{border-color:var(--accent);background:rgba(124,58,237,0.1);}
-.theme-card .emoji{font-size:28px;margin-bottom:4px;}
-.theme-card .t-name{font-size:13px;font-weight:700;color:var(--text);}
+.theme-card{padding:0.9rem;border-radius:12px;border:2px solid var(--border);cursor:pointer;transition:all 0.2s;background:var(--card2);text-align:center;}
+.theme-card.selected{border-color:var(--accent);}
+.theme-card .emoji{font-size:26px;margin-bottom:4px;}
+.theme-card .t-name{font-size:12px;font-weight:700;color:var(--text);}
 .theme-card .t-desc{font-size:11px;color:var(--muted);margin-top:2px;}
-
-/* ROUND SELECTOR */
-.round-grid{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;}
+.round-grid{display:flex;gap:8px;margin-top:6px;}
 .round-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--muted);cursor:pointer;font-size:14px;font-weight:600;transition:all 0.15s;}
-.round-btn.selected{border-color:var(--accent);background:rgba(124,58,237,0.15);color:var(--accent2);}
-
-/* QUESTION CARD */
-.q-card{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:2rem 1.5rem;text-align:center;margin:1rem 0;min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.round-btn.selected{border-color:var(--accent);color:var(--accent2);}
+.q-card{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:2rem 1.5rem;text-align:center;margin:1rem 0;min-height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
 .q-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
-.q-type-badge{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);margin-bottom:0.75rem;}
-.q-text{font-size:17px;font-weight:500;color:var(--text);line-height:1.6;}
-
-/* ANSWER BOX */
+.q-type{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);margin-bottom:0.75rem;}
+.q-text{font-size:16px;font-weight:500;color:var(--text);line-height:1.6;}
 .answer-box{background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:12px;padding:1rem;margin:0.75rem 0;}
-.answer-box .answer-label{font-size:11px;font-weight:700;color:var(--accent2);letter-spacing:1px;margin-bottom:6px;}
-.answer-box .answer-text{font-size:15px;color:var(--text);font-style:italic;}
-
-/* REACTIONS */
+.answer-label{font-size:11px;font-weight:700;color:var(--accent2);letter-spacing:1px;margin-bottom:6px;}
+.answer-text{font-size:15px;color:var(--text);font-style:italic;}
 .reactions{display:flex;gap:8px;justify-content:center;margin:0.5rem 0;flex-wrap:wrap;}
 .reaction-btn{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:6px 12px;cursor:pointer;font-size:18px;transition:all 0.15s;}
-.reaction-btn:hover{transform:scale(1.2);border-color:var(--accent);}
-
-/* SCORE BAR */
+.reaction-btn:hover{transform:scale(1.2);}
 .score-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--card2);border-radius:10px;margin-bottom:0.75rem;}
 .score-item{text-align:center;}
 .score-name{font-size:11px;color:var(--muted);font-weight:600;}
-.score-val{font-size:18px;font-weight:700;color:var(--accent2);}
-
-/* TURN BAR */
+.score-val{font-size:20px;font-weight:700;color:var(--accent2);}
 .turn-bar{text-align:center;padding:8px;font-size:14px;color:var(--muted);margin-bottom:0.5rem;}
 .turn-bar strong{color:var(--text);}
-
-/* WAITING */
-.waiting-anim{text-align:center;padding:2rem;color:var(--muted);}
-.dot{display:inline-block;animation:bounce 1.4s infinite ease-in-out both;}
-.dot:nth-child(1){animation-delay:-0.32s;}
-.dot:nth-child(2){animation-delay:-0.16s;}
+.waiting-anim{text-align:center;padding:1.5rem;color:var(--muted);}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent2);animation:bounce 1.4s infinite ease-in-out both;}
+.dot:nth-child(1){animation-delay:-0.32s;}.dot:nth-child(2){animation-delay:-0.16s;}
 @keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
-.dot-row{display:flex;justify-content:center;gap:6px;margin-top:0.5rem;}
-
-/* HEADER */
+.dot-row{display:flex;justify-content:center;gap:6px;margin-top:0.75rem;}
 .game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;}
 .round-badge{background:rgba(124,58,237,0.15);color:var(--accent2);border:1px solid rgba(168,85,247,0.3);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
-
-/* FLOATING REACTION */
-.float-reaction{position:fixed;bottom:20px;right:20px;font-size:32px;animation:floatUp 2s ease-out forwards;pointer-events:none;z-index:999;}
-@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-120px) scale(1.5);}}
-
-/* HOME LOGO */
-.logo-area{text-align:center;padding:2rem 0 1.5rem;}
-.logo-icon{font-size:56px;margin-bottom:0.5rem;display:block;filter:drop-shadow(0 0 20px var(--glow,rgba(124,58,237,0.5)));}
-
-/* SHARE BOX */
-.share-box{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:10px 14px;font-size:12px;color:#10b981;margin:0.75rem 0;word-break:break-all;cursor:pointer;transition:background 0.2s;}
-.share-box:hover{background:rgba(16,185,129,0.15);}
-
-/* CHOICE ROW */
 .choice-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0.75rem 0;}
-
-/* SEPARATOR */
-.sep{text-align:center;color:var(--muted);font-size:12px;margin:0.5rem 0;}
-
-/* NOTIFICATION */
 .notif{background:rgba(124,58,237,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--accent2);margin:0.5rem 0;animation:fadeIn 0.3s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.float-reaction{position:fixed;bottom:20px;right:20px;font-size:32px;animation:floatUp 2s ease-out forwards;pointer-events:none;z-index:999;}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-120px) scale(1.5);}}
+.logo-area{text-align:center;padding:1.5rem 0 1rem;}
+.logo-icon{font-size:52px;margin-bottom:0.5rem;display:block;}
 
-/* NEXT TURN WAITING */
-.next-waiting{text-align:center;color:var(--muted);font-size:13px;padding:0.5rem 0;}
+/* HOME GAME CARDS */
+.game-menu{display:grid;gap:12px;margin-top:0.5rem;}
+.game-card{background:var(--card2);border:2px solid var(--border);border-radius:14px;padding:1.25rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:1rem;}
+.game-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.game-card .g-icon{font-size:36px;flex-shrink:0;}
+.game-card .g-info .g-name{font-size:16px;font-weight:700;color:var(--text);}
+.game-card .g-info .g-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+.game-card .g-badge{margin-left:auto;flex-shrink:0;}
+
+/* QUIZ specific */
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0.75rem 0;}
+.quiz-opt{padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:14px;font-weight:500;cursor:pointer;transition:all 0.15s;text-align:center;}
+.quiz-opt:hover{border-color:var(--accent);}
+.quiz-opt.correct{background:rgba(16,185,129,0.2);border-color:#10b981;color:#10b981;}
+.quiz-opt.wrong{background:rgba(239,68,68,0.2);border-color:#ef4444;color:#ef4444;}
+.quiz-opt.disabled{cursor:not-allowed;opacity:0.6;}
+.timer-bar{height:4px;background:var(--border);border-radius:2px;margin:0.5rem 0;overflow:hidden;}
+.timer-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width 0.1s linear;}
+
+/* QUI FERAIT ÇA specific */
+.qui-options{display:grid;gap:10px;margin:0.75rem 0;}
+.qui-opt{padding:14px;border-radius:10px;border:2px solid var(--border);background:var(--card2);color:var(--text);font-size:15px;font-weight:600;cursor:pointer;transition:all 0.15s;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;}
+.qui-opt:hover{border-color:var(--accent);}
+.qui-opt.voted{border-color:var(--accent);background:rgba(124,58,237,0.1);}
+.qui-opt.revealed-match{border-color:#10b981;background:rgba(16,185,129,0.15);color:#10b981;}
+.qui-opt.revealed-diff{border-color:#ef4444;background:rgba(239,68,68,0.1);}
+.vote-result{text-align:center;padding:1rem;border-radius:12px;margin:0.75rem 0;}
+.vote-result.match{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);}
+.vote-result.diff{background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);}
 </style>
 </head>
-<body data-theme="friend">
+<body data-theme="aov">
 <div id="app">
 
-<!-- ACCUEIL -->
+<!-- ===== ACCUEIL ===== -->
 <div class="screen active" id="screen-home">
   <div class="logo-area">
     <span class="logo-icon">🎮</span>
     <h1>GameZone</h1>
-    <p style="margin-top:4px;">Joue avec tes amis, chacun de son côté</p>
+    <p style="margin-top:4px;">Choisis un jeu et invite tes amis</p>
   </div>
   <div class="card">
-    <label>Ton prénom</label>
+    <label>Ton prénom d'abord</label>
     <input type="text" id="home-name" placeholder="Ex: Charles" maxlength="20"/>
-    <button class="btn btn-primary" onclick="goCreate()" style="margin-top:1.25rem;">✨ Créer une partie</button>
-    <button class="btn btn-ghost" onclick="goJoin()">🔗 Rejoindre avec un code</button>
+  </div>
+  <div class="game-menu">
+    <div class="game-card" onclick="selectGame('aov')">
+      <div class="g-icon">🎯</div>
+      <div class="g-info">
+        <div class="g-name">Action ou Vérité</div>
+        <div class="g-desc">Défis et questions intimes</div>
+      </div>
+      <span class="badge badge-purple g-badge">4 thèmes</span>
+    </div>
+    <div class="game-card" onclick="selectGame('quiz')">
+      <div class="g-icon">🧠</div>
+      <div class="g-info">
+        <div class="g-name">Quiz / Devinettes</div>
+        <div class="g-desc">Culture générale et fun</div>
+      </div>
+      <span class="badge badge-green g-badge" style="background:rgba(8,145,178,0.15);color:#22d3ee;border-color:rgba(34,211,238,0.3);">Chrono</span>
+    </div>
+    <div class="game-card" onclick="selectGame('qui')">
+      <div class="g-icon">💬</div>
+      <div class="g-info">
+        <div class="g-name">Qui ferait ça ?</div>
+        <div class="g-desc">Votez sur qui ferait quoi</div>
+      </div>
+      <span class="badge g-badge" style="background:rgba(5,150,105,0.15);color:#34d399;border-color:rgba(52,211,153,0.3);">2 joueurs</span>
+    </div>
   </div>
 </div>
 
-<!-- CRÉATION -->
+<!-- ===== LOBBY CRÉATION ===== -->
 <div class="screen" id="screen-create">
-  <div class="logo-area" style="padding:1rem 0 0.5rem;">
-    <h1>Nouvelle partie</h1>
-  </div>
-
+  <div class="logo-area" style="padding:1rem 0 0.5rem;"><h1 id="create-title">Nouvelle partie</h1></div>
   <div class="card">
     <label>Code de ta partie</label>
     <div class="code-box" id="room-code-display">----</div>
-    <div class="share-box" id="share-box" onclick="copyLink()" title="Clique pour copier">
-      📋 Copier le lien à envoyer → <span id="share-url"></span>
-    </div>
-
-    <label style="margin-top:0.75rem;">Joueurs</label>
-    <div style="margin-top:8px;">
+    <div class="share-box" id="share-box" onclick="copyLink()">📋 Copier le lien à envoyer → <span id="share-url"></span></div>
+    <div style="margin-top:0.5rem;">
       <div class="player-row">
         <div class="avatar av1" id="av1-letter">C</div>
-        <div style="flex:1;">
-          <div style="font-weight:600;font-size:14px;" id="p1-name-display">Toi</div>
-          <div style="font-size:11px;color:var(--muted);">Hôte de la partie</div>
-        </div>
+        <div style="flex:1;"><div style="font-weight:600;font-size:14px;" id="p1-name-display">Toi</div><div style="font-size:11px;color:var(--muted);">Hôte</div></div>
         <span class="badge badge-green">● Connecté</span>
       </div>
       <div class="player-row" id="p2-wait-row">
@@ -210,130 +180,120 @@ select option{background:#1a1a2e;}
       </div>
       <div class="player-row" id="p2-ready-row" style="display:none;">
         <div class="avatar av2" id="av2-letter">?</div>
-        <div style="flex:1;">
-          <div style="font-weight:600;font-size:14px;" id="p2-name-display">...</div>
-          <div style="font-size:11px;color:var(--muted);">A rejoint la partie !</div>
-        </div>
+        <div style="flex:1;"><div style="font-weight:600;font-size:14px;" id="p2-name-display">...</div><div style="font-size:11px;color:var(--muted);">A rejoint !</div></div>
         <span class="badge badge-pink">● Prêt(e)</span>
       </div>
     </div>
   </div>
 
-  <div class="card" id="settings-card" style="display:none;">
-    <label>Thème du jeu</label>
-    <div class="theme-grid" id="theme-grid">
-      <div class="theme-card selected" data-theme="friend" onclick="selectTheme(this)">
-        <div class="emoji">😄</div>
-        <div class="t-name">Entre amis</div>
-        <div class="t-desc">Fun et léger</div>
-      </div>
-      <div class="theme-card" data-theme="crush" onclick="selectTheme(this)">
-        <div class="emoji">❤️</div>
-        <div class="t-name">Rapprochement</div>
-        <div class="t-desc">Questions intimes</div>
-      </div>
-      <div class="theme-card" data-theme="dare" onclick="selectTheme(this)">
-        <div class="emoji">🔥</div>
-        <div class="t-name">Défis osés</div>
-        <div class="t-desc">Pour les courageux</div>
-      </div>
-      <div class="theme-card" data-theme="wild" onclick="selectTheme(this)">
-        <div class="emoji">🌀</div>
-        <div class="t-name">Wild Card</div>
-        <div class="t-desc">Mix de tout</div>
-      </div>
+  <!-- Settings AOV -->
+  <div class="card" id="settings-aov" style="display:none;">
+    <label>Thème</label>
+    <div class="theme-grid">
+      <div class="theme-card selected" data-theme="friend" onclick="selectTheme(this)"><div class="emoji">😄</div><div class="t-name">Entre amis</div><div class="t-desc">Fun et léger</div></div>
+      <div class="theme-card" data-theme="crush" onclick="selectTheme(this)"><div class="emoji">❤️</div><div class="t-name">Rapprochement</div><div class="t-desc">Questions intimes</div></div>
+      <div class="theme-card" data-theme="dare" onclick="selectTheme(this)"><div class="emoji">🔥</div><div class="t-name">Défis osés</div><div class="t-desc">Pour les courageux</div></div>
+      <div class="theme-card" data-theme="wild" onclick="selectTheme(this)"><div class="emoji">🌀</div><div class="t-name">Wild Card</div><div class="t-desc">Mix de tout</div></div>
     </div>
-
-    <label style="margin-top:1.25rem;">Nombre de tours</label>
+    <label style="margin-top:1rem;">Nombre de tours</label>
     <div class="round-grid">
       <div class="round-btn" onclick="selectRounds(this,5)">5</div>
       <div class="round-btn selected" onclick="selectRounds(this,10)">10</div>
       <div class="round-btn" onclick="selectRounds(this,15)">15</div>
       <div class="round-btn" onclick="selectRounds(this,20)">20</div>
     </div>
-
-    <button class="btn btn-primary" onclick="startGame()" style="margin-top:1.25rem;">▶️ Lancer la partie !</button>
+    <button class="btn btn-primary" onclick="startGame()" style="margin-top:1.25rem;">▶️ Lancer !</button>
     <button class="btn btn-ghost" onclick="goHome()">Retour</button>
   </div>
 
-  <div id="no-settings-card">
+  <!-- Settings QUIZ -->
+  <div class="card" id="settings-quiz" style="display:none;">
+    <label>Catégorie</label>
+    <select id="quiz-category">
+      <option value="general">🌍 Culture générale</option>
+      <option value="cameroun">🇨🇲 Cameroun & Afrique</option>
+      <option value="sport">⚽ Sport</option>
+      <option value="fun">😂 Questions fun</option>
+    </select>
+    <label style="margin-top:1rem;">Nombre de questions</label>
+    <div class="round-grid">
+      <div class="round-btn" onclick="selectRounds(this,5)">5</div>
+      <div class="round-btn selected" onclick="selectRounds(this,10)">10</div>
+      <div class="round-btn" onclick="selectRounds(this,15)">15</div>
+    </div>
+    <button class="btn btn-primary" onclick="startGame()" style="margin-top:1.25rem;">▶️ Lancer !</button>
+    <button class="btn btn-ghost" onclick="goHome()">Retour</button>
+  </div>
+
+  <!-- Settings QUI -->
+  <div class="card" id="settings-qui" style="display:none;">
+    <label>Nombre de questions</label>
+    <div class="round-grid">
+      <div class="round-btn" onclick="selectRounds(this,5)">5</div>
+      <div class="round-btn selected" onclick="selectRounds(this,10)">10</div>
+      <div class="round-btn" onclick="selectRounds(this,15)">15</div>
+    </div>
+    <button class="btn btn-primary" onclick="startGame()" style="margin-top:1.25rem;">▶️ Lancer !</button>
+    <button class="btn btn-ghost" onclick="goHome()">Retour</button>
+  </div>
+
+  <div id="settings-placeholder">
     <button class="btn btn-ghost" onclick="goHome()">Retour</button>
   </div>
 </div>
 
-<!-- REJOINDRE -->
+<!-- ===== REJOINDRE ===== -->
 <div class="screen" id="screen-join">
   <div class="logo-area" style="padding:1rem 0 0.5rem;"><h1>Rejoindre</h1></div>
   <div class="card">
     <label>Code de la partie</label>
-    <input type="text" id="join-code" placeholder="Ex: A3F7"
-      style="text-transform:uppercase;letter-spacing:8px;font-size:26px;font-family:monospace;text-align:center;"
-      maxlength="4" oninput="this.value=this.value.toUpperCase()"/>
-    <div style="color:var(--danger);font-size:13px;margin-top:8px;display:none;" id="join-error">❌ Code incorrect ou partie introuvable.</div>
+    <input type="text" id="join-code" placeholder="Ex: A3F7" style="text-transform:uppercase;letter-spacing:8px;font-size:26px;font-family:monospace;text-align:center;" maxlength="4" oninput="this.value=this.value.toUpperCase()"/>
+    <div style="color:#ef4444;font-size:13px;margin-top:8px;display:none;" id="join-error"></div>
     <button class="btn btn-primary" onclick="joinGame()" style="margin-top:1rem;">Rejoindre →</button>
     <button class="btn btn-ghost" onclick="goHome()">Retour</button>
   </div>
 </div>
 
-<!-- ATTENTE P2 -->
+<!-- ===== ATTENTE P2 ===== -->
 <div class="screen" id="screen-wait">
   <div class="card" style="margin-top:2rem;">
     <div class="waiting-anim">
-      <div style="font-size:48px;">🎯</div>
+      <div style="font-size:48px;" id="wait-icon">🎯</div>
       <h2 style="margin-top:0.75rem;">Tu as rejoint !</h2>
       <p>En attente que l'hôte lance le jeu...</p>
-      <div class="dot-row">
-        <div class="dot" style="width:10px;height:10px;border-radius:50%;background:var(--accent2);"></div>
-        <div class="dot" style="width:10px;height:10px;border-radius:50%;background:var(--accent2);"></div>
-        <div class="dot" style="width:10px;height:10px;border-radius:50%;background:var(--accent2);"></div>
-      </div>
+      <div class="dot-row"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
       <div class="code-box" style="font-size:32px;margin-top:1.5rem;" id="wait-code-display">----</div>
     </div>
   </div>
 </div>
 
-<!-- JEU -->
-<div class="screen" id="screen-game">
+<!-- ===== JEU AOV ===== -->
+<div class="screen" id="screen-aov">
   <div class="game-header">
-    <span class="round-badge" id="round-badge">Tour 1/10</span>
-    <div style="font-size:12px;color:var(--muted);" id="mode-label"></div>
+    <span class="round-badge" id="aov-round">Tour 1/10</span>
+    <div style="font-size:12px;color:var(--muted);" id="aov-mode-label"></div>
   </div>
-
   <div class="score-bar">
-    <div class="score-item">
-      <div class="score-name" id="sname1">J1</div>
-      <div class="score-val" id="sval1">0</div>
-    </div>
+    <div class="score-item"><div class="score-name" id="aov-sname1">J1</div><div class="score-val" id="aov-sval1">0</div></div>
     <div style="font-size:20px;">⚔️</div>
-    <div class="score-item">
-      <div class="score-name" id="sname2">J2</div>
-      <div class="score-val" id="sval2">0</div>
+    <div class="score-item"><div class="score-name" id="aov-sname2">J2</div><div class="score-val" id="aov-sval2">0</div></div>
+  </div>
+  <div class="turn-bar" id="aov-turn-bar">C'est ton tour !</div>
+  <div class="q-card" id="aov-q-card">
+    <div class="q-type" id="aov-q-type" style="display:none;"></div>
+    <div class="q-text" id="aov-q-text">Choisis Action ou Vérité !</div>
+  </div>
+  <div id="aov-answer-display" style="display:none;" class="answer-box">
+    <div class="answer-label" id="aov-answer-label">Réponse</div>
+    <div class="answer-text" id="aov-answer-text"></div>
+  </div>
+  <div id="aov-answer-zone" style="display:none;">
+    <textarea id="aov-answer-input" placeholder="Tape ta réponse ici..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-primary btn-sm" onclick="submitAnswerAov()" style="flex:1;">Envoyer ✉️</button>
     </div>
   </div>
-
-  <div class="turn-bar" id="turn-bar">C'est ton tour !</div>
-
-  <div class="q-card" id="q-card">
-    <div class="q-type-badge" id="q-type-badge" style="display:none;"></div>
-    <div class="q-text" id="q-text">Choisis Action ou Vérité pour commencer !</div>
-  </div>
-
-  <!-- Réponse de l'autre joueur visible ici -->
-  <div id="answer-display" style="display:none;" class="answer-box">
-    <div class="answer-label" id="answer-label">Réponse</div>
-    <div class="answer-text" id="answer-text"></div>
-  </div>
-
-  <!-- Zone de réponse pour le joueur actif -->
-  <div id="answer-zone" style="display:none;">
-    <textarea id="answer-input" placeholder="Tape ta réponse ici..." rows="3"></textarea>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-primary btn-sm" onclick="submitAnswer()" style="flex:1;margin-top:8px;">Envoyer ma réponse ✉️</button>
-    </div>
-  </div>
-
-  <!-- Réactions rapides -->
-  <div class="reactions" id="reactions-row" style="display:none;">
+  <div class="reactions" id="aov-reactions">
     <button class="reaction-btn" onclick="sendReaction('😂')">😂</button>
     <button class="reaction-btn" onclick="sendReaction('😱')">😱</button>
     <button class="reaction-btn" onclick="sendReaction('❤️')">❤️</button>
@@ -341,46 +301,102 @@ select option{background:#1a1a2e;}
     <button class="reaction-btn" onclick="sendReaction('👏')">👏</button>
     <button class="reaction-btn" onclick="sendReaction('😏')">😏</button>
   </div>
-
-  <!-- Notif réaction -->
-  <div id="reaction-notif" style="display:none;" class="notif"></div>
-
-  <!-- Boutons de choix -->
-  <div class="choice-row" id="choice-buttons">
-    <button class="btn btn-action" onclick="pickType('action')">⚡ Action</button>
-    <button class="btn btn-truth" onclick="pickType('verite')">💬 Vérité</button>
+  <div id="aov-reaction-notif" style="display:none;" class="notif"></div>
+  <div class="choice-row" id="aov-choice">
+    <button class="btn-action" onclick="pickTypeAov('action')">⚡ Action</button>
+    <button class="btn-truth" onclick="pickTypeAov('verite')">💬 Vérité</button>
   </div>
-
-  <!-- Boutons après question -->
-  <div id="done-buttons" style="display:none;">
-    <button class="btn btn-primary" onclick="markDone()">✅ C'est fait !</button>
-    <button class="btn btn-ghost" onclick="skipQuestion()" style="margin-top:6px;">⏭ Passer cette question</button>
+  <div id="aov-done" style="display:none;">
+    <button class="btn btn-primary" onclick="markDoneAov()">✅ C'est fait !</button>
+    <button class="btn btn-ghost" onclick="skipAov()" style="margin-top:6px;">⏭ Passer</button>
   </div>
-
-  <!-- Attente de l'autre -->
-  <div id="waiting-other" style="display:none;" class="waiting-anim">
-    <p>En attente de <strong id="other-name" style="color:var(--text);"></strong>...</p>
-    <div class="dot-row">
-      <div class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--accent2);"></div>
-      <div class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--accent2);"></div>
-      <div class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--accent2);"></div>
-    </div>
+  <div id="aov-waiting" style="display:none;" class="waiting-anim">
+    <p>En attente de <strong id="aov-other-name" style="color:var(--text);"></strong>...</p>
+    <div class="dot-row"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
   </div>
-
-  <!-- Tour suivant -->
-  <div id="next-area" style="display:none;">
-    <button class="btn btn-primary" onclick="goNextTurn()">Tour suivant →</button>
-    <div class="next-waiting" id="next-waiting-msg"></div>
+  <div id="aov-next" style="display:none;">
+    <button class="btn btn-primary" onclick="nextTurnAov()">Tour suivant →</button>
   </div>
 </div>
 
-<!-- FIN -->
-<div class="screen" id="screen-end">
-  <div class="logo-area" style="padding:1.5rem 0 1rem;">
-    <span class="logo-icon">🏆</span>
-    <h1>Fin de partie !</h1>
+<!-- ===== JEU QUIZ ===== -->
+<div class="screen" id="screen-quiz">
+  <div class="game-header">
+    <span class="round-badge" id="quiz-round">Q 1/10</span>
+    <span style="font-size:12px;color:var(--muted);">🧠 Quiz</span>
   </div>
-  <div class="card card-glow">
+  <div class="score-bar">
+    <div class="score-item"><div class="score-name" id="quiz-sname1">J1</div><div class="score-val" id="quiz-sval1">0</div></div>
+    <div style="font-size:16px;color:var(--muted);">pts</div>
+    <div class="score-item"><div class="score-name" id="quiz-sname2">J2</div><div class="score-val" id="quiz-sval2">0</div></div>
+  </div>
+  <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+  <div class="q-card">
+    <div class="q-type" id="quiz-category-label"></div>
+    <div class="q-text" id="quiz-q-text">Prêt à jouer ?</div>
+  </div>
+  <div class="quiz-options" id="quiz-options"></div>
+  <div id="quiz-result" style="display:none;" class="answer-box">
+    <div class="answer-label" id="quiz-result-label"></div>
+    <div class="answer-text" id="quiz-result-text"></div>
+  </div>
+  <div id="quiz-waiting" style="display:none;" class="waiting-anim">
+    <p>En attente de <strong id="quiz-other-name" style="color:var(--text);"></strong>...</p>
+    <div class="dot-row"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+  <div id="quiz-next" style="display:none;">
+    <button class="btn btn-primary" onclick="quizNext()">Question suivante →</button>
+  </div>
+  <div class="reactions" style="margin-top:0.5rem;">
+    <button class="reaction-btn" onclick="sendReaction('😂')">😂</button>
+    <button class="reaction-btn" onclick="sendReaction('🤯')">🤯</button>
+    <button class="reaction-btn" onclick="sendReaction('👏')">👏</button>
+    <button class="reaction-btn" onclick="sendReaction('😤')">😤</button>
+  </div>
+  <div id="quiz-reaction-notif" style="display:none;" class="notif"></div>
+</div>
+
+<!-- ===== JEU QUI FERAIT ÇA ===== -->
+<div class="screen" id="screen-qui">
+  <div class="game-header">
+    <span class="round-badge" id="qui-round">Q 1/10</span>
+    <span style="font-size:12px;color:var(--muted);">💬 Qui ferait ça ?</span>
+  </div>
+  <div class="score-bar">
+    <div class="score-item"><div class="score-name" id="qui-sname1">J1</div><div class="score-val" id="qui-sval1">0</div></div>
+    <div style="font-size:13px;color:var(--muted);text-align:center;">si même<br>réponse</div>
+    <div class="score-item"><div class="score-name" id="qui-sname2">J2</div><div class="score-val" id="qui-sval2">0</div></div>
+  </div>
+  <div class="q-card">
+    <div class="q-type">Qui des deux ferait ça ?</div>
+    <div class="q-text" id="qui-q-text">Chargement...</div>
+  </div>
+  <div class="qui-options" id="qui-options"></div>
+  <div id="qui-vote-status" style="display:none;" class="waiting-anim">
+    <p id="qui-vote-msg">Vote envoyé ! En attente de l'autre...</p>
+    <div class="dot-row"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+  <div id="qui-result" style="display:none;" class="vote-result">
+    <div style="font-size:28px;" id="qui-result-emoji">🎉</div>
+    <div style="font-size:15px;font-weight:600;color:var(--text);margin-top:0.5rem;" id="qui-result-text"></div>
+    <div style="font-size:13px;color:var(--muted);margin-top:4px;" id="qui-votes-detail"></div>
+  </div>
+  <div id="qui-next" style="display:none;">
+    <button class="btn btn-primary" onclick="quiNext()">Question suivante →</button>
+  </div>
+  <div class="reactions" style="margin-top:0.5rem;">
+    <button class="reaction-btn" onclick="sendReaction('😂')">😂</button>
+    <button class="reaction-btn" onclick="sendReaction('😱')">😱</button>
+    <button class="reaction-btn" onclick="sendReaction('🔥')">🔥</button>
+    <button class="reaction-btn" onclick="sendReaction('👀')">👀</button>
+  </div>
+  <div id="qui-reaction-notif" style="display:none;" class="notif"></div>
+</div>
+
+<!-- ===== FIN ===== -->
+<div class="screen" id="screen-end">
+  <div class="logo-area" style="padding:1.5rem 0 1rem;"><span class="logo-icon">🏆</span><h1>Fin de partie !</h1></div>
+  <div class="card">
     <div class="player-row">
       <div class="avatar av1" id="end-av1">J</div>
       <div style="flex:1;font-weight:600;" id="end-p1-name">Joueur 1</div>
@@ -392,7 +408,7 @@ select option{background:#1a1a2e;}
       <div style="font-size:24px;font-weight:700;color:#fb7185;" id="end-p2-score">0 pts</div>
     </div>
     <div style="text-align:center;margin-top:1.25rem;padding:1rem;background:var(--card2);border-radius:12px;">
-      <div style="font-size:32px;" id="end-emoji">🎉</div>
+      <div style="font-size:36px;" id="end-emoji">🎉</div>
       <p style="font-size:16px;font-weight:600;color:var(--text);margin-top:0.5rem;" id="winner-text"></p>
     </div>
     <button class="btn btn-primary" onclick="goHome()" style="margin-top:1.25rem;">🔄 Nouvelle partie</button>
@@ -400,399 +416,518 @@ select option{background:#1a1a2e;}
 </div>
 
 </div>
-
 <script>
-const QUESTIONS = {
-  friend: {
-    action: [
-      "Fais le bruit de l'animal qui te ressemble le plus.",
-      "Montre la dernière photo prise sur ton téléphone.",
-      "Imite la voix de ton chanteur préféré pendant 30 secondes.",
-      "Envoie un message vocal ridicule à quelqu'un de tes contacts maintenant.",
-      "Fais 10 squats et filme-toi.",
-      "Danse pendant 20 secondes sur la dernière chanson écoutée.",
-      "Poste une story bizarre sur tes réseaux maintenant.",
-      "Appelle quelqu'un au hasard dans tes contacts et dis 'tu me manques'.",
-      "Dis 3 choses que tu n'as jamais osé dire à quelqu'un.",
-      "Change ta photo de profil WhatsApp pour quelque chose de ridicule pendant 1h."
-    ],
-    verite: [
-      "Quel est ton plus grand secret que personne ne sait ?",
-      "Quelle est la chose la plus embarrassante que tu aies faite en public ?",
-      "Quel est le mensonge dont tu es le plus fier(e) ?",
-      "Qu'est-ce qui te fait vraiment peur dans la vie ?",
-      "Qui était ton crush secret au lycée ?",
-      "Quelle est la pire chose que tu aies faite sans te faire prendre ?",
-      "Quel est ton plus grand complexe physique ?",
-      "Si tu pouvais effacer un souvenir, lequel ce serait ?",
-      "Quelle est la chose la plus stupide que tu aies faite par amour ?",
-      "Qui est la personne que tu as le plus déçue dans ta vie ?"
-    ]
+// ==================== QUESTIONS ====================
+const AOV_Q = {
+  friend:{
+    action:["Fais le bruit de l'animal qui te ressemble le plus.","Montre la dernière photo prise sur ton téléphone.","Imite la voix de ton chanteur préféré pendant 30 secondes.","Envoie un message vocal ridicule à quelqu'un de tes contacts.","Fais 10 squats maintenant.","Danse pendant 20 secondes sur la dernière chanson écoutée.","Poste une story bizarre sur tes réseaux.","Appelle quelqu'un et dis 'tu me manques' sans raison.","Dis 3 choses que tu n'as jamais osé dire à quelqu'un.","Change ta photo de profil pour quelque chose de ridicule pendant 1h."],
+    verite:["Quel est ton plus grand secret ?","Quelle est la chose la plus embarrassante que tu aies faite en public ?","Quel est le mensonge dont tu es le plus fier(e) ?","Qu'est-ce qui te fait vraiment peur dans la vie ?","Qui était ton crush secret au lycée ?","Quelle est la pire chose que tu aies faite sans te faire prendre ?","Quel est ton plus grand complexe ?","Si tu pouvais effacer un souvenir, lequel ?","La chose la plus stupide faite par amour ?","Qui as-tu le plus déçu dans ta vie ?"]
   },
-  crush: {
-    action: [
-      "Envoie-moi un compliment sincère en ce moment.",
-      "Dis-moi ce que tu penses vraiment de moi en 3 mots seulement.",
-      "Raconte-moi la dernière fois que tu as pensé à moi.",
-      "Envoie-moi ta chanson préférée du moment avec un message.",
-      "Décris notre première rencontre de ton point de vue.",
-      "Dis-moi un truc que tu voulais me dire depuis longtemps.",
-      "Envoie-moi une photo de ton endroit préféré avec une légende.",
-      "Décris le meilleur souvenir qu'on a ensemble.",
-      "Dis-moi quelque chose qui te fait sourire en ce moment.",
-      "Envoie-moi le dernier mème qui t'a fait rire."
-    ],
-    verite: [
-      "Qu'est-ce qui t'a attiré(e) chez moi la première fois qu'on s'est vus ?",
-      "Quel moment passé avec moi tu n'oublieras jamais ?",
-      "Est-ce que tu as déjà imaginé à quoi ressemblerait notre premier rendez-vous ?",
-      "Qu'est-ce que tu penses que je ne sais pas encore sur toi ?",
-      "Quelle chanson te fait penser à moi et pourquoi ?",
-      "Qu'est-ce qui te rendrait heureux(se) dans une relation ?",
-      "Est-ce que tu es du genre jaloux(se) ? Donne un exemple.",
-      "Qu'est-ce que tu attends vraiment de quelqu'un qui compte pour toi ?",
-      "Quel serait le date parfait pour toi ? Décris-le.",
-      "Quel est ton plus grand défaut dans une relation selon toi ?"
-    ]
+  crush:{
+    action:["Envoie-moi un compliment sincère maintenant.","Dis-moi ce que tu penses de moi en 3 mots.","Raconte la dernière fois que tu as pensé à moi.","Envoie-moi ta chanson préférée du moment.","Décris notre première rencontre de ton point de vue.","Dis-moi un truc que tu voulais me dire depuis longtemps.","Envoie-moi une photo de ton endroit préféré.","Décris le meilleur souvenir qu'on a ensemble.","Dis-moi quelque chose qui te fait sourire en ce moment.","Envoie-moi le dernier mème qui t'a fait rire."],
+    verite:["Qu'est-ce qui t'a attiré(e) chez moi la première fois ?","Quel moment avec moi tu n'oublieras jamais ?","Tu as déjà imaginé notre premier rendez-vous ?","Qu'est-ce que je ne sais pas encore sur toi ?","Quelle chanson te fait penser à moi ?","Qu'est-ce qui te rendrait heureux(se) dans une relation ?","Tu es du genre jaloux(se) ?","Qu'est-ce que tu attends vraiment de quelqu'un ?","Décris le date parfait pour toi.","Ton plus grand défaut dans une relation ?"]
   },
-  dare: {
-    action: [
-      "Envoie-moi le message le plus romantique que tu puisses écrire en 1 minute.",
-      "Dis-moi 3 choses que tu voudrais qu'on fasse ensemble un jour.",
-      "Envoie-moi un voice note de toi en train de chanter ma chanson préférée.",
-      "Dis-moi exactement ce que tu ressens pour moi en ce moment.",
-      "Envoie-moi le message le plus long possible sur ce que tu penses de moi.",
-      "Décris-moi comment tu m'imagines dans 5 ans.",
-      "Appelle-moi et dis-moi quelque chose que tu n'as jamais osé dire.",
-      "Envoie-moi une photo de toi en ce moment sans filtre.",
-      "Dis-moi une chose secrète que tu n'as jamais dite à personne.",
-      "Décris le moment exact où tu as réalisé que tu te sentais proche de moi."
-    ],
-    verite: [
-      "Est-ce que tu as déjà eu des sentiments forts pour moi ? Depuis quand exactement ?",
-      "Qu'est-ce qui t'empêche de dire vraiment ce que tu ressens ?",
-      "Quel est le truc le plus osé que tu aies jamais fait pour quelqu'un ?",
-      "Est-ce que tu rougis quand je t'écris ? Sois totalement honnête.",
-      "Qu'est-ce qui te plaît vraiment chez moi, physiquement et autrement ?",
-      "Si je te demandais de sortir avec moi là maintenant, tu dirais quoi ?",
-      "Qu'est-ce que tu n'oseras peut-être jamais me dire en face ?",
-      "Tu penses à moi avant de t'endormir ? Qu'est-ce qui te passe par la tête ?",
-      "Quel est le moment où tu as eu le plus envie de te rapprocher de moi ?",
-      "Si on était seuls quelque part ce soir, qu'est-ce que tu ferais ?"
-    ]
+  dare:{
+    action:["Envoie-moi le message le plus romantique possible.","Dis-moi 3 choses qu'on ferait ensemble un jour.","Envoie un voice note de toi en train de chanter.","Dis-moi exactement ce que tu ressens pour moi maintenant.","Écris le message le plus long possible sur ce que tu penses de moi.","Décris comment tu m'imagines dans 5 ans.","Appelle-moi et dis quelque chose que tu n'as jamais osé dire.","Envoie une photo de toi maintenant sans filtre.","Dis un secret que tu n'as jamais dit à personne.","Décris le moment exact où tu t'es senti(e) proche de moi."],
+    verite:["Tu as eu des sentiments forts pour moi ? Depuis quand ?","Qu'est-ce qui t'empêche de dire ce que tu ressens ?","Le truc le plus osé que tu aies jamais fait ?","Tu rougis quand je t'écris ? Sois honnête.","Ce qui te plaît vraiment chez moi, physiquement et autrement ?","Si je te demandais de sortir avec moi, tu dirais quoi ?","Ce que tu n'oseras peut-être jamais me dire en face ?","Tu penses à moi avant de t'endormir ?","Quand as-tu eu le plus envie de te rapprocher de moi ?","Si on était seuls ce soir, qu'est-ce que tu ferais ?"]
   },
-  wild: {
-    action: [
-      "Fais une déclaration à voix haute à quelqu'un près de toi maintenant.",
-      "Envoie un message bizarre à la dernière personne dans ta liste WhatsApp.",
-      "Poste une photo de tes chaussures actuelles.",
-      "Fais une grimace et prends un selfie — envoie-le maintenant.",
-      "Imite quelqu'un que vous connaissez tous les deux.",
-      "Envoie le 5ème emoji de ton clavier dans un message à quelqu'un.",
-      "Décris ta journée en utilisant seulement des emojis.",
-      "Appelle quelqu'un et parle avec un accent pendant 1 minute.",
-      "Fais 20 secondes de stand-up comedy improvisé.",
-      "Change ta sonnerie pour quelque chose de ridicule maintenant."
-    ],
-    verite: [
-      "Quelle est la chose la plus folle que tu aies jamais faite spontanément ?",
-      "Quel est ton talent caché que peu de gens connaissent ?",
-      "Quelle est ta plus grande superstition ?",
-      "Si tu pouvais vivre dans n'importe quel pays, lequel et pourquoi ?",
-      "Quelle est la chose dont tu es le plus fier(e) dans ta vie ?",
-      "Si tu pouvais changer une décision passée, laquelle ce serait ?",
-      "Quel est ton rêve le plus fou que tu n'as dit à presque personne ?",
-      "Quelle habitude secrète as-tu que les gens seraient surpris d'apprendre ?",
-      "Quelle est la chose qui t'a le plus fait changer comme personne ?",
-      "Si ta vie était un film, comment s'appellerait-il ?"
-    ]
+  wild:{
+    action:["Fais une déclaration à voix haute à quelqu'un près de toi.","Envoie un message bizarre à la dernière personne de ta liste WhatsApp.","Poste une photo de tes chaussures actuelles.","Imite quelqu'un qu'on connaît tous les deux.","Décris ta journée avec seulement des emojis.","Fais 20 secondes de stand-up improvisé.","Envoie le 5ème emoji de ton clavier à quelqu'un.","Parle avec un accent pendant 1 minute.","Fais semblant de pleurer pendant 10 secondes.","Chante les 4 premières lignes d'une chanson populaire."],
+    verite:["La chose la plus folle que tu aies faite spontanément ?","Ton talent caché que peu de gens connaissent ?","Ta plus grande superstition ?","Si tu pouvais vivre dans n'importe quel pays, lequel ?","Ce dont tu es le plus fier(e) dans ta vie ?","Si tu pouvais changer une décision passée, laquelle ?","Ton rêve le plus fou que tu n'as dit à presque personne ?","Ton habitude secrète que les gens seraient surpris d'apprendre ?","Ce qui t'a le plus fait changer comme personne ?","Si ta vie était un film, comment s'appellerait-il ?"]
   }
 };
 
-const THEMES = {
-  friend: { label: '😄 Entre amis', badge: 'badge-purple' },
-  crush:  { label: '❤️ Rapprochement', badge: 'badge-pink' },
-  dare:   { label: '🔥 Défis osés', badge: 'badge-orange' },
-  wild:   { label: '🌀 Wild Card', badge: 'badge-cyan' }
+const QUIZ_Q = {
+  general:[
+    {q:"Quelle est la capitale de la France ?",opts:["Paris","Lyon","Marseille","Bordeaux"],ans:0},
+    {q:"Combien de continents y a-t-il sur Terre ?",opts:["5","6","7","8"],ans:2},
+    {q:"Quel est l'élément chimique de symbole 'O' ?",opts:["Or","Oxygène","Osmium","Ozone"],ans:1},
+    {q:"Qui a peint la Joconde ?",opts:["Michel-Ange","Raphaël","Léonard de Vinci","Botticelli"],ans:2},
+    {q:"Quelle est la plus grande planète du système solaire ?",opts:["Saturne","Neptune","Jupiter","Uranus"],ans:2},
+    {q:"En quelle année a eu lieu la Révolution française ?",opts:["1776","1789","1804","1815"],ans:1},
+    {q:"Quel pays a la plus grande superficie du monde ?",opts:["Canada","Chine","USA","Russie"],ans:3},
+    {q:"Combien de côtés a un hexagone ?",opts:["5","6","7","8"],ans:1},
+    {q:"Quel est le plus long fleuve du monde ?",opts:["Amazone","Mississippi","Nil","Yangtsé"],ans:2},
+    {q:"Qui a écrit 'Roméo et Juliette' ?",opts:["Molière","Shakespeare","Victor Hugo","Balzac"],ans:1},
+    {q:"Quel animal est le plus rapide sur terre ?",opts:["Lion","Guépard","Faucon","Cheval"],ans:1},
+    {q:"Combien de joueurs composent une équipe de football ?",opts:["9","10","11","12"],ans:2},
+    {q:"Quelle est la monnaie du Japon ?",opts:["Yuan","Won","Yen","Ringgit"],ans:2},
+    {q:"Quel est l'océan le plus grand ?",opts:["Atlantique","Indien","Arctique","Pacifique"],ans:3},
+    {q:"En quelle année l'homme a-t-il marché sur la Lune pour la première fois ?",opts:["1965","1967","1969","1971"],ans:2}
+  ],
+  cameroun:[
+    {q:"Quelle est la capitale politique du Cameroun ?",opts:["Douala","Yaoundé","Bafoussam","Garoua"],ans:1},
+    {q:"Quelle est la plus grande ville du Cameroun ?",opts:["Yaoundé","Garoua","Douala","Bamenda"],ans:2},
+    {q:"Le Cameroun est surnommé...",opts:["Le cœur de l'Afrique","L'Afrique en miniature","Le géant africain","La perle de l'Afrique"],ans:1},
+    {q:"Quelle est la monnaie utilisée au Cameroun ?",opts:["Cedi","Franc CFA","Naira","Dalasi"],ans:1},
+    {q:"Quel fleuve traverse Yaoundé ?",opts:["Wouri","Sanaga","Mfoundi","Nyong"],ans:2},
+    {q:"Combien de régions compte le Cameroun ?",opts:["8","10","12","14"],ans:1},
+    {q:"Quelle est la montagne la plus haute du Cameroun ?",opts:["Mont Bamboutos","Mont Manengouba","Mont Cameroun","Mont Mandara"],ans:2},
+    {q:"En quelle année le Cameroun a-t-il obtenu son indépendance ?",opts:["1958","1960","1962","1965"],ans:1},
+    {q:"Quel est le plat national du Cameroun ?",opts:["Jollof rice","Fufu et Eru","Ndolé","Poulet DG"],ans:2},
+    {q:"Les Lions Indomptables ont remporté la CAN combien de fois ?",opts:["3","4","5","6"],ans:2}
+  ],
+  sport:[
+    {q:"Combien de buts Ronaldo a-t-il marqués en carrière (environ) ?",opts:["700","800","900","1000"],ans:1},
+    {q:"Quel pays a gagné le plus de Coupes du Monde de football ?",opts:["Allemagne","Italie","Argentine","Brésil"],ans:3},
+    {q:"Dans quel sport utilise-t-on un shuttlecock (volant) ?",opts:["Tennis","Badminton","Squash","Padel"],ans:1},
+    {q:"Combien de sets faut-il gagner pour remporter Wimbledon (hommes) ?",opts:["2","3","4","5"],ans:1},
+    {q:"Quel nageur a remporté le plus de médailles olympiques ?",opts:["Ian Thorpe","Ryan Lochte","Michael Phelps","Mark Spitz"],ans:2},
+    {q:"Quelle équipe NBA a le plus de titres ?",opts:["Lakers","Celtics","Bulls","Warriors"],ans:1},
+    {q:"En quelle année la France a-t-elle gagné sa première Coupe du Monde ?",opts:["1994","1996","1998","2000"],ans:2},
+    {q:"Quel sport se joue à Wimbledon ?",opts:["Golf","Cricket","Tennis","Polo"],ans:2},
+    {q:"Combien de joueurs dans une équipe de basket en jeu ?",opts:["4","5","6","7"],ans:1},
+    {q:"Qui est surnommé 'La Pulga' ?",opts:["Neymar","Messi","Mbappé","Ronaldo"],ans:1}
+  ],
+  fun:[
+    {q:"Si tu mélanges rouge et jaune, tu obtiens ?",opts:["Violet","Vert","Orange","Marron"],ans:2},
+    {q:"Combien de secondes dans une heure ?",opts:["360","3600","36000","360000"],ans:1},
+    {q:"Quel pays a inventé la pizza ?",opts:["France","Espagne","Grèce","Italie"],ans:3},
+    {q:"Un 'baker's dozen' c'est combien ?",opts:["10","12","13","14"],ans:2},
+    {q:"Quelle planète est surnommée la 'planète rouge' ?",opts:["Vénus","Mars","Jupiter","Mercure"],ans:1},
+    {q:"Quel fruit est aussi appelé 'avocat' en français ?",opts:["Mangue","Papaye","Avocat","Goyave"],ans:2},
+    {q:"Combien d'heures y a-t-il dans une semaine ?",opts:["152","168","172","180"],ans:1},
+    {q:"Quelle est la langue la plus parlée au monde ?",opts:["Anglais","Espagnol","Mandarin","Hindi"],ans:2},
+    {q:"Quel animal peut vivre sans eau le plus longtemps ?",opts:["Chameau","Rat kangourou","Scorpion","Tortue du désert"],ans:1},
+    {q:"En binaire, que vaut 1010 ?",opts:["8","10","12","14"],ans:1}
+  ]
 };
 
+const QUI_Q = [
+  {q:"Qui serait le plus susceptible de rater son réveil un jour important ?",opts:null},
+  {q:"Qui dépenserait tout son argent en une seule sortie ?",opts:null},
+  {q:"Qui pleurerait devant un film d'animation ?",opts:null},
+  {q:"Qui mangerait de la nourriture tombée par terre ?",opts:null},
+  {q:"Qui enverrait un message au mauvais destinataire ?",opts:null},
+  {q:"Qui serait le plus courageux face à une araignée ?",opts:null},
+  {q:"Qui parlerait en dormant ?",opts:null},
+  {q:"Qui cuisinerait le mieux ?",opts:null},
+  {q:"Qui serait le plus têtu lors d'une dispute ?",opts:null},
+  {q:"Qui perdrait son téléphone le plus souvent ?",opts:null},
+  {q:"Qui ferait des folies par amour ?",opts:null},
+  {q:"Qui resterait calme en cas d'urgence ?",opts:null},
+  {q:"Qui serait le plus généreux avec ses amis ?",opts:null},
+  {q:"Qui passerait la nuit entière sur les réseaux sociaux ?",opts:null},
+  {q:"Qui serait millionnaire dans 10 ans ?",opts:null}
+];
+
+// ==================== STATE ====================
 const socket = io();
-let state = {
+let S = {
   myName:'', myId:'', roomCode:'', isHost:false,
   players:{p1:'',p2:''}, scores:{p1:0,p2:0},
   round:1, maxRounds:10, currentTurn:'p1',
-  mode:'friend', usedQ:{action:[],verite:[]},
-  currentQType:'', selectedMode:'friend', selectedRounds:10,
-  nextReady:{ p1:false, p2:false }
+  gameType:'aov', aovMode:'friend',
+  usedQ:{action:[],verite:[]}, usedQuiz:[], usedQui:[],
+  selectedRounds:10, selectedTheme:'friend',
+  quizCategory:'general', quizAnswered:false,
+  quizTimer:null, currentQuizQ:null,
+  myVote:null, hasVoted:false
 };
 
+// ==================== UI HELPERS ====================
 function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 function goHome(){ location.reload(); }
 function getName(){ return document.getElementById('home-name').value.trim(); }
-
-function setTheme(t){
-  document.body.setAttribute('data-theme', t);
-  const themes = document.querySelectorAll('.theme-card');
-  themes.forEach(c => c.classList.toggle('selected', c.dataset.theme === t));
-}
+function setThemeColor(t){ document.body.setAttribute('data-theme', t); }
 
 function selectTheme(el){
   document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
-  state.selectedMode = el.dataset.theme;
-  setTheme(state.selectedMode);
+  S.selectedTheme = el.dataset.theme;
+  setThemeColor(S.selectedTheme);
 }
-
-function selectRounds(el, n){
+function selectRounds(el,n){
   document.querySelectorAll('.round-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
-  state.selectedRounds = n;
+  S.selectedRounds = n;
+}
+function copyLink(){
+  const url = window.location.origin+'?code='+S.roomCode;
+  navigator.clipboard.writeText(url).then(()=>{
+    document.getElementById('share-box').textContent='✅ Lien copié ! Envoie-le lui sur WhatsApp';
+    setTimeout(()=>{ document.getElementById('share-box').innerHTML='📋 Copier le lien → <span id="share-url">'+url+'</span>'; },2500);
+  });
+}
+function showFloating(emoji){ const el=document.createElement('div'); el.className='float-reaction'; el.textContent=emoji; document.body.appendChild(el); setTimeout(()=>el.remove(),2000); }
+function sendReaction(emoji){ socket.emit('send_reaction',{emoji,playerName:S.myName}); showFloating(emoji); }
+function showReactionNotif(notifId,emoji,playerName){ const el=document.getElementById(notifId); if(!el)return; el.textContent=playerName+' : '+emoji; el.style.display='block'; setTimeout(()=>el.style.display='none',3000); }
+function showEnd(scores){
+  S.scores=scores;
+  document.getElementById('end-p1-name').textContent=S.players.p1;
+  document.getElementById('end-p2-name').textContent=S.players.p2;
+  document.getElementById('end-av1').textContent=S.players.p1[0].toUpperCase();
+  document.getElementById('end-av2').textContent=S.players.p2[0].toUpperCase();
+  document.getElementById('end-p1-score').textContent=scores.p1+' pts';
+  document.getElementById('end-p2-score').textContent=scores.p2+' pts';
+  const s1=scores.p1,s2=scores.p2;
+  let w,e;
+  if(s1>s2){w=S.players.p1+' gagne !';e='🏆';}
+  else if(s2>s1){w=S.players.p2+' gagne !';e='🏆';}
+  else{w='Égalité parfaite !';e='🤝';}
+  document.getElementById('winner-text').textContent=w;
+  document.getElementById('end-emoji').textContent=e;
+  showScreen('screen-end');
 }
 
-function goCreate(){
-  const name = getName();
+// ==================== HOME ====================
+function selectGame(type){
+  const name=getName();
   if(!name){ document.getElementById('home-name').focus(); return; }
-  state.myName = name; state.myId = 'p1'; state.isHost = true; state.players.p1 = name;
-  socket.emit('create_room', { name, mode:'friend', maxRounds:10 });
+  S.myName=name; S.myId='p1'; S.isHost=true; S.gameType=type;
+  S.players.p1=name;
+  setThemeColor(type==='quiz'?'quiz':type==='qui'?'qui':'aov');
+  socket.emit('create_room',{name,gameType:type,options:{maxRounds:10}});
 }
-
 function goJoin(){
-  const name = getName();
+  const name=getName();
   if(!name){ document.getElementById('home-name').focus(); return; }
-  state.myName = name; state.myId = 'p2';
+  S.myName=name; S.myId='p2';
   showScreen('screen-join');
 }
 
+// ==================== JOIN ====================
 function joinGame(){
-  const code = document.getElementById('join-code').value.trim().toUpperCase();
-  if(code.length!==4) return;
-  state.roomCode = code;
-  document.getElementById('wait-code-display').textContent = code;
-  socket.emit('join_room', { name:state.myName, code });
+  const code=document.getElementById('join-code').value.trim().toUpperCase();
+  if(code.length!==4)return;
+  S.roomCode=code;
+  document.getElementById('wait-code-display').textContent=code;
+  socket.emit('join_room',{name:S.myName,code});
 }
 
+// ==================== START ====================
 function startGame(){
-  socket.emit('start_game', { mode: state.selectedMode, maxRounds: state.selectedRounds });
+  let options={maxRounds:S.selectedRounds};
+  if(S.gameType==='aov') options.aovMode=S.selectedTheme;
+  if(S.gameType==='quiz') options.quizCategory=document.getElementById('quiz-category').value;
+  socket.emit('start_game',{options});
 }
 
-function copyLink(){
-  const url = window.location.origin + '?code=' + state.roomCode;
-  navigator.clipboard.writeText(url).then(()=>{
-    const box = document.getElementById('share-box');
-    box.textContent = '✅ Lien copié ! Envoie-le lui sur WhatsApp';
-    setTimeout(()=>{ box.innerHTML = '📋 Copier le lien → <span id="share-url">' + url + '</span>'; }, 2000);
+// ==================== AOV GAME ====================
+function initAov(firstTurn,options,players){
+  S.currentTurn=firstTurn; S.aovMode=options.aovMode||'friend';
+  S.players=players; S.round=1; S.maxRounds=options.maxRounds||10;
+  S.scores={p1:0,p2:0}; S.usedQ={action:[],verite:[]};
+  setThemeColor(S.aovMode);
+  renderAov();
+  showScreen('screen-aov');
+}
+function renderAov(){
+  const isMe=S.currentTurn===S.myId;
+  const turnName=S.players[S.currentTurn];
+  const other=S.players[S.currentTurn==='p1'?'p2':'p1'];
+  document.getElementById('aov-round').textContent=`Tour ${S.round}/${S.maxRounds}`;
+  document.getElementById('aov-mode-label').textContent={friend:'😄 Amis',crush:'❤️ Rapprochement',dare:'🔥 Osé',wild:'🌀 Wild'}[S.aovMode]||'';
+  document.getElementById('aov-sname1').textContent=S.players.p1;
+  document.getElementById('aov-sname2').textContent=S.players.p2;
+  document.getElementById('aov-sval1').textContent=S.scores.p1;
+  document.getElementById('aov-sval2').textContent=S.scores.p2;
+  document.getElementById('aov-turn-bar').innerHTML=isMe?'✨ <strong>C\'est ton tour !</strong>':`⏳ Tour de <strong>${turnName}</strong>`;
+  document.getElementById('aov-q-text').textContent=isMe?'Choisis Action ou Vérité !':'En attente du choix de '+turnName+'...';
+  document.getElementById('aov-q-type').style.display='none';
+  document.getElementById('aov-choice').style.display=isMe?'grid':'none';
+  document.getElementById('aov-done').style.display='none';
+  document.getElementById('aov-answer-zone').style.display='none';
+  document.getElementById('aov-answer-display').style.display='none';
+  document.getElementById('aov-waiting').style.display=isMe?'none':'block';
+  document.getElementById('aov-other-name').textContent=turnName;
+  document.getElementById('aov-next').style.display='none';
+}
+function pickTypeAov(type){
+  const pool=AOV_Q[S.aovMode][type];
+  const used=S.usedQ[type];
+  let avail=pool.map((_,i)=>i).filter(i=>!used.includes(i));
+  if(!avail.length){S.usedQ[type]=[]; avail=pool.map((_,i)=>i);}
+  const idx=avail[Math.floor(Math.random()*avail.length)];
+  S.usedQ[type].push(idx);
+  socket.emit('pick_question',{question:pool[idx],qtype:type});
+}
+function submitAnswerAov(){
+  const a=document.getElementById('aov-answer-input').value.trim();
+  if(!a)return;
+  socket.emit('submit_answer',{answer:a,playerName:S.myName});
+  document.getElementById('aov-answer-input').value='';
+  document.getElementById('aov-answer-zone').style.display='none';
+  document.getElementById('aov-done').style.display='block';
+}
+function skipAov(){ socket.emit('skip_question'); }
+function markDoneAov(){ socket.emit('mark_done'); }
+function nextTurnAov(){ socket.emit('next_turn'); }
+
+// ==================== QUIZ GAME ====================
+let quizTimerInterval=null;
+function initQuiz(options,players,firstTurn){
+  S.players=players; S.round=1; S.maxRounds=options.maxRounds||10;
+  S.scores={p1:0,p2:0}; S.usedQuiz=[]; S.quizCategory=options.quizCategory||'general';
+  S.currentTurn=firstTurn;
+  document.getElementById('quiz-sname1').textContent=players.p1;
+  document.getElementById('quiz-sname2').textContent=players.p2;
+  setThemeColor('quiz');
+  loadQuizQuestion();
+  showScreen('screen-quiz');
+}
+function loadQuizQuestion(){
+  const pool=QUIZ_Q[S.quizCategory]||QUIZ_Q.general;
+  let avail=pool.map((_,i)=>i).filter(i=>!S.usedQuiz.includes(i));
+  if(!avail.length){S.usedQuiz=[];avail=pool.map((_,i)=>i);}
+  const idx=avail[Math.floor(Math.random()*avail.length)];
+  S.usedQuiz.push(idx);
+  S.currentQuizQ=pool[idx];
+  S.quizAnswered=false;
+  document.getElementById('quiz-round').textContent=`Q ${S.round}/${S.maxRounds}`;
+  document.getElementById('quiz-q-text').textContent=S.currentQuizQ.q;
+  document.getElementById('quiz-category-label').textContent={general:'🌍 Culture générale',cameroun:'🇨🇲 Cameroun & Afrique',sport:'⚽ Sport',fun:'😂 Fun'}[S.quizCategory]||'';
+  document.getElementById('quiz-result').style.display='none';
+  document.getElementById('quiz-waiting').style.display='none';
+  document.getElementById('quiz-next').style.display='none';
+  renderQuizOptions();
+  startTimer();
+}
+function renderQuizOptions(answered,correct){
+  const opts=document.getElementById('quiz-options');
+  opts.innerHTML='';
+  S.currentQuizQ.opts.forEach((o,i)=>{
+    const btn=document.createElement('div');
+    btn.className='quiz-opt';
+    btn.textContent=o;
+    if(answered){
+      btn.classList.add('disabled');
+      if(i===S.currentQuizQ.ans) btn.classList.add('correct');
+      else if(i===answered&&i!==S.currentQuizQ.ans) btn.classList.add('wrong');
+    } else {
+      btn.onclick=()=>answerQuiz(i);
+    }
+    opts.appendChild(btn);
   });
 }
-
-function pickType(type){
-  const pool = QUESTIONS[state.mode][type];
-  let available = pool.filter((_,i)=>!state.usedQ[type].includes(i));
-  if(!available.length){ state.usedQ[type]=[]; available=pool; }
-  const allIdx = pool.map((_,i)=>i).filter(i=>!state.usedQ[type].includes(i));
-  const idx = allIdx[Math.floor(Math.random()*allIdx.length)];
-  state.usedQ[type].push(idx);
-  state.currentQType = type;
-  socket.emit('pick_question', { question:pool[idx], qtype:type, theme:state.mode });
+function startTimer(){
+  if(quizTimerInterval) clearInterval(quizTimerInterval);
+  let t=15;
+  document.getElementById('timer-fill').style.width='100%';
+  quizTimerInterval=setInterval(()=>{
+    t--;
+    document.getElementById('timer-fill').style.width=(t/15*100)+'%';
+    if(t<=0){
+      clearInterval(quizTimerInterval);
+      if(!S.quizAnswered) answerQuiz(-1);
+    }
+  },1000);
+}
+function answerQuiz(idx){
+  if(S.quizAnswered)return;
+  S.quizAnswered=true;
+  clearInterval(quizTimerInterval);
+  const correct=idx===S.currentQuizQ.ans;
+  const points=correct?1:0;
+  renderQuizOptions(idx,S.currentQuizQ.ans);
+  socket.emit('quiz_answer',{answer:idx,playerId:S.myId,playerName:S.myName,correct,points});
+  document.getElementById('quiz-waiting').style.display='block';
+  document.getElementById('quiz-other-name').textContent=S.players[S.myId==='p1'?'p2':'p1'];
 }
 
-function submitAnswer(){
-  const answer = document.getElementById('answer-input').value.trim();
-  if(!answer) return;
-  socket.emit('submit_answer', { answer, playerName: state.myName });
-  document.getElementById('answer-input').value = '';
-  document.getElementById('answer-zone').style.display = 'none';
-  document.getElementById('done-buttons').style.display = 'block';
+function quizNext(){ socket.emit('quiz_next'); }
+
+// ==================== QUI FERAIT ÇA ====================
+function initQui(options,players){
+  S.players=players; S.round=1; S.maxRounds=options.maxRounds||10;
+  S.scores={p1:0,p2:0}; S.usedQui=[];
+  document.getElementById('qui-sname1').textContent=players.p1;
+  document.getElementById('qui-sname2').textContent=players.p2;
+  setThemeColor('qui');
+  loadQuiQuestion();
+  showScreen('screen-qui');
 }
-
-function skipQuestion(){
-  socket.emit('skip_question');
+function loadQuiQuestion(){
+  let avail=QUI_Q.map((_,i)=>i).filter(i=>!S.usedQui.includes(i));
+  if(!avail.length){S.usedQui=[];avail=QUI_Q.map((_,i)=>i);}
+  const idx=avail[Math.floor(Math.random()*avail.length)];
+  S.usedQui.push(idx);
+  const q=QUI_Q[idx];
+  document.getElementById('qui-round').textContent=`Q ${S.round}/${S.maxRounds}`;
+  document.getElementById('qui-q-text').textContent=q.q;
+  S.myVote=null; S.hasVoted=false;
+  document.getElementById('qui-vote-status').style.display='none';
+  document.getElementById('qui-result').style.display='none';
+  document.getElementById('qui-next').style.display='none';
+  renderQuiOptions();
 }
-
-function markDone(){
-  socket.emit('mark_done');
+function renderQuiOptions(){
+  const el=document.getElementById('qui-options');
+  el.innerHTML='';
+  [S.players.p1,S.players.p2].forEach((name,i)=>{
+    const pid=i===0?'p1':'p2';
+    const btn=document.createElement('div');
+    btn.className='qui-opt';
+    btn.innerHTML=`<span style="font-size:22px;">${i===0?'😄':'😍'}</span> ${name}`;
+    btn.onclick=()=>voteQui(pid,name,btn);
+    el.appendChild(btn);
+  });
 }
-
-function sendReaction(emoji){
-  socket.emit('send_reaction', { emoji, playerName: state.myName });
-  showFloatingReaction(emoji);
+function voteQui(pid,name,btn){
+  if(S.hasVoted)return;
+  S.hasVoted=true; S.myVote=pid;
+  document.querySelectorAll('.qui-opt').forEach(b=>b.classList.remove('voted'));
+  btn.classList.add('voted');
+  socket.emit('qui_vote',{choice:pid,playerId:S.myId,playerName:S.myName});
+  document.getElementById('qui-vote-status').style.display='block';
+  document.getElementById('qui-vote-msg').textContent=`Tu as voté : ${name}. En attente de l'autre...`;
 }
+function quiNext(){ socket.emit('qui_next'); }
 
-function showFloatingReaction(emoji){
-  const el = document.createElement('div');
-  el.className = 'float-reaction';
-  el.textContent = emoji;
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(), 2000);
-}
-
-function goNextTurn(){
-  socket.emit('next_turn');
-}
-
-function renderGame(){
-  const isMyTurn = state.currentTurn === state.myId;
-  const turnName = state.players[state.currentTurn];
-  const otherName = state.players[state.currentTurn==='p1'?'p2':'p1'];
-
-  document.getElementById('round-badge').textContent = `Tour ${state.round}/${state.maxRounds}`;
-  document.getElementById('mode-label').textContent = THEMES[state.mode]?.label || '';
-  document.getElementById('sname1').textContent = state.players.p1 || 'J1';
-  document.getElementById('sname2').textContent = state.players.p2 || 'J2';
-  document.getElementById('sval1').textContent = state.scores.p1;
-  document.getElementById('sval2').textContent = state.scores.p2;
-  document.getElementById('turn-bar').innerHTML = isMyTurn ? '✨ <strong>C\'est ton tour !</strong>' : `⏳ Tour de <strong>${turnName}</strong>`;
-  document.getElementById('q-text').textContent = isMyTurn ? 'Choisis : Action ou Vérité ?' : `En attente du choix de ${turnName}...`;
-  document.getElementById('q-type-badge').style.display = 'none';
-  document.getElementById('choice-buttons').style.display = isMyTurn ? 'grid' : 'none';
-  document.getElementById('done-buttons').style.display = 'none';
-  document.getElementById('answer-zone').style.display = 'none';
-  document.getElementById('answer-display').style.display = 'none';
-  document.getElementById('waiting-other').style.display = isMyTurn ? 'none' : 'block';
-  document.getElementById('other-name').textContent = turnName;
-  document.getElementById('next-area').style.display = 'none';
-  document.getElementById('reactions-row').style.display = 'flex';
-}
-
-function updateScores(scores){
-  state.scores = scores;
-  document.getElementById('sval1').textContent = scores.p1;
-  document.getElementById('sval2').textContent = scores.p2;
-}
-
-// SOCKET EVENTS
-socket.on('room_created', ({code})=>{
-  state.roomCode = code;
-  document.getElementById('room-code-display').textContent = code;
-  document.getElementById('p1-name-display').textContent = state.myName;
-  document.getElementById('av1-letter').textContent = state.myName[0].toUpperCase();
-  const url = window.location.origin + '?code=' + code;
-  document.getElementById('share-url').textContent = url;
+// ==================== SOCKET EVENTS ====================
+socket.on('room_created',({code,gameType})=>{
+  S.roomCode=code; S.gameType=gameType;
+  document.getElementById('room-code-display').textContent=code;
+  document.getElementById('p1-name-display').textContent=S.myName;
+  document.getElementById('av1-letter').textContent=S.myName[0].toUpperCase();
+  const url=window.location.origin+'?code='+code;
+  document.getElementById('share-url').textContent=url;
+  document.getElementById('create-title').textContent={aov:'🎯 Action ou Vérité',quiz:'🧠 Quiz',qui:'💬 Qui ferait ça ?'}[gameType]||'Nouvelle partie';
+  document.getElementById('settings-placeholder').style.display='none';
   showScreen('screen-create');
 });
 
-socket.on('player_joined', ({p1,p2})=>{
-  state.players = {p1,p2};
-  document.getElementById('p2-wait-row').style.display = 'none';
-  document.getElementById('p2-ready-row').style.display = 'flex';
-  document.getElementById('p2-name-display').textContent = p2;
-  document.getElementById('av2-letter').textContent = p2[0].toUpperCase();
-  document.getElementById('settings-card').style.display = 'block';
-  document.getElementById('no-settings-card').style.display = 'none';
-  if(!state.isHost){ showScreen('screen-wait'); }
+socket.on('player_joined',({p1,p2,gameType})=>{
+  S.players={p1,p2};
+  document.getElementById('p2-wait-row').style.display='none';
+  document.getElementById('p2-ready-row').style.display='flex';
+  document.getElementById('p2-name-display').textContent=p2;
+  document.getElementById('av2-letter').textContent=p2[0].toUpperCase();
+  ['settings-aov','settings-quiz','settings-qui'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('settings-'+(gameType||S.gameType)).style.display='block';
+  if(!S.isHost){ 
+    const icons={aov:'🎯',quiz:'🧠',qui:'💬'};
+    document.getElementById('wait-icon').textContent=icons[gameType]||'🎮';
+    showScreen('screen-wait'); 
+  }
 });
 
-socket.on('join_error', ({message})=>{
-  const el = document.getElementById('join-error');
-  el.textContent = '❌ ' + message;
-  el.style.display = 'block';
-  setTimeout(()=>el.style.display='none', 3000);
+socket.on('join_error',({message})=>{
+  const el=document.getElementById('join-error');
+  el.textContent='❌ '+message; el.style.display='block';
+  setTimeout(()=>el.style.display='none',3000);
 });
 
-socket.on('game_started', ({firstTurn, mode, maxRounds, players})=>{
-  state.currentTurn = firstTurn;
-  state.mode = mode;
-  state.maxRounds = maxRounds;
-  state.players = players;
-  state.round = 1;
-  state.scores = {p1:0,p2:0};
-  state.usedQ = {action:[],verite:[]};
-  setTheme(mode);
-  renderGame();
-  showScreen('screen-game');
+socket.on('game_started',({firstTurn,options,gameType,players})=>{
+  S.gameType=gameType;
+  if(gameType==='aov') initAov(firstTurn,options,players);
+  else if(gameType==='quiz') initQuiz(options,players,firstTurn);
+  else if(gameType==='qui') initQui(options,players);
 });
 
-socket.on('question_picked', ({question, qtype})=>{
-  state.currentQType = qtype;
-  const isMyTurn = state.currentTurn === state.myId;
-  const badge = document.getElementById('q-type-badge');
-  badge.textContent = qtype === 'action' ? '⚡ Action' : '💬 Vérité';
-  badge.style.display = 'block';
-  document.getElementById('q-text').textContent = question;
-  document.getElementById('choice-buttons').style.display = 'none';
-  document.getElementById('waiting-other').style.display = 'none';
-  document.getElementById('answer-display').style.display = 'none';
+// AOV events
+socket.on('question_picked',({question,qtype})=>{
+  const isMe=S.currentTurn===S.myId;
+  document.getElementById('aov-q-type').textContent=qtype==='action'?'⚡ Action':'💬 Vérité';
+  document.getElementById('aov-q-type').style.display='block';
+  document.getElementById('aov-q-text').textContent=question;
+  document.getElementById('aov-choice').style.display='none';
+  document.getElementById('aov-waiting').style.display='none';
+  document.getElementById('aov-answer-display').style.display='none';
+  if(isMe){
+    if(qtype==='verite'){ document.getElementById('aov-answer-zone').style.display='block'; document.getElementById('aov-done').style.display='none'; }
+    else { document.getElementById('aov-done').style.display='block'; document.getElementById('aov-answer-zone').style.display='none'; }
+  } else { document.getElementById('aov-waiting').style.display='block'; }
+});
+socket.on('answer_received',({answer,playerName})=>{
+  document.getElementById('aov-answer-display').style.display='block';
+  document.getElementById('aov-answer-label').textContent='Réponse de '+playerName+' :';
+  document.getElementById('aov-answer-text').textContent=answer;
+  document.getElementById('aov-waiting').style.display='none';
+  if(S.currentTurn!==S.myId) document.getElementById('aov-done').style.display='block';
+});
+socket.on('question_skipped',()=>{
+  const isMe=S.currentTurn===S.myId;
+  document.getElementById('aov-q-text').textContent=isMe?'Question passée — choisis à nouveau !':S.players[S.currentTurn]+' a passé...';
+  document.getElementById('aov-answer-display').style.display='none';
+  document.getElementById('aov-done').style.display='none';
+  document.getElementById('aov-answer-zone').style.display='none';
+  if(isMe) document.getElementById('aov-choice').style.display='grid';
+  else document.getElementById('aov-waiting').style.display='block';
+});
+socket.on('turn_done',({scores})=>{
+  S.scores=scores;
+  document.getElementById('aov-sval1').textContent=scores.p1;
+  document.getElementById('aov-sval2').textContent=scores.p2;
+  document.getElementById('aov-done').style.display='none';
+  document.getElementById('aov-waiting').style.display='none';
+  document.getElementById('aov-answer-zone').style.display='none';
+  document.getElementById('aov-q-text').textContent='✅ Tour terminé !';
+  document.getElementById('aov-next').style.display='block';
+});
+socket.on('next_turn',({round,currentTurn})=>{
+  S.round=round; S.currentTurn=currentTurn; renderAov();
+});
 
-  if(isMyTurn){
-    if(qtype === 'verite'){
-      document.getElementById('answer-zone').style.display = 'block';
-      document.getElementById('done-buttons').style.display = 'none';
-    } else {
-      document.getElementById('done-buttons').style.display = 'block';
-      document.getElementById('answer-zone').style.display = 'none';
-    }
+// QUIZ events
+socket.on('quiz_answer_received',({playerId,playerName,correct,scores})=>{
+  S.scores=scores;
+  document.getElementById('quiz-sval1').textContent=scores.p1;
+  document.getElementById('quiz-sval2').textContent=scores.p2;
+  if(playerId!==S.myId){
+    document.getElementById('quiz-waiting').style.display='none';
+    document.getElementById('quiz-result').style.display='block';
+    document.getElementById('quiz-result-label').textContent='Réponse de '+playerName;
+    document.getElementById('quiz-result-text').textContent=correct?'✅ Bonne réponse +1 pt !':'❌ Mauvaise réponse';
+    if(!S.quizAnswered){ S.quizAnswered=true; clearInterval(quizTimerInterval); renderQuizOptions(-1,S.currentQuizQ.ans); }
   } else {
-    document.getElementById('waiting-other').style.display = 'block';
+    document.getElementById('quiz-result').style.display='block';
+    document.getElementById('quiz-result-label').textContent='Ta réponse';
+    document.getElementById('quiz-result-text').textContent=correct?'✅ Bonne réponse ! +1 pt':'❌ Mauvaise réponse. La bonne était : '+S.currentQuizQ.opts[S.currentQuizQ.ans];
+  }
+  document.getElementById('quiz-next').style.display= S.myId==='p1'?'block':'none';
+  if(S.myId!=='p1') document.getElementById('quiz-waiting').style.display='block';
+});
+socket.on('quiz_next',({round})=>{
+  S.round=round; loadQuizQuestion();
+  document.getElementById('quiz-waiting').style.display='none';
+});
+
+// QUI events
+socket.on('vote_received',({playerId,playerName,choice})=>{
+  if(playerId!==S.myId){
+    document.getElementById('qui-vote-msg').textContent=playerName+' a voté !';
   }
 });
-
-socket.on('answer_received', ({answer, playerName})=>{
-  document.getElementById('answer-display').style.display = 'block';
-  document.getElementById('answer-label').textContent = `Réponse de ${playerName} :`;
-  document.getElementById('answer-text').textContent = answer;
-  document.getElementById('waiting-other').style.display = 'none';
-  if(state.currentTurn !== state.myId){
-    document.getElementById('done-buttons').style.display = 'block';
+socket.on('votes_revealed',({votes,same,scores})=>{
+  S.scores=scores;
+  document.getElementById('qui-sval1').textContent=scores.p1;
+  document.getElementById('qui-sval2').textContent=scores.p2;
+  document.getElementById('qui-vote-status').style.display='none';
+  const resEl=document.getElementById('qui-result');
+  resEl.style.display='block';
+  resEl.className='vote-result '+(same?'match':'diff');
+  document.getElementById('qui-result-emoji').textContent=same?'🎉':'🤔';
+  document.getElementById('qui-result-text').textContent=same?'Même réponse ! +1 pt chacun !':'Pas d\'accord... 0 pt';
+  document.getElementById('qui-votes-detail').textContent=S.players.p1+' → '+S.players[votes.p1]+'   |   '+S.players.p2+' → '+S.players[votes.p2];
+  document.getElementById('qui-next').style.display=S.myId==='p1'?'block':'none';
+  if(S.myId!=='p1'){
+    const w=document.createElement('div'); w.className='waiting-anim'; w.style.marginTop='0.5rem';
+    w.innerHTML='<p style="font-size:13px;">En attente de '+S.players.p1+'...</p>';
+    document.getElementById('qui-next').insertAdjacentElement('afterend',w);
   }
 });
-
-socket.on('question_skipped', ()=>{
-  const isMyTurn = state.currentTurn === state.myId;
-  document.getElementById('q-text').textContent = isMyTurn ? 'Question passée — choisis à nouveau !' : `${state.players[state.currentTurn]} a passé la question...`;
-  document.getElementById('answer-display').style.display = 'none';
-  document.getElementById('done-buttons').style.display = 'none';
-  document.getElementById('answer-zone').style.display = 'none';
-  if(isMyTurn){ document.getElementById('choice-buttons').style.display = 'grid'; }
-  else { document.getElementById('waiting-other').style.display = 'block'; }
+socket.on('qui_next',({round})=>{
+  S.round=round;
+  document.querySelectorAll('.waiting-anim').forEach(el=>{ if(!el.id) el.remove(); });
+  loadQuiQuestion();
 });
 
-socket.on('reaction_received', ({emoji, playerName})=>{
-  const notif = document.getElementById('reaction-notif');
-  notif.textContent = `${playerName} a réagi : ${emoji}`;
-  notif.style.display = 'block';
-  showFloatingReaction(emoji);
-  setTimeout(()=>notif.style.display='none', 3000);
+// Common
+socket.on('reaction_received',({emoji,playerName})=>{
+  showFloating(emoji);
+  ['aov-reaction-notif','quiz-reaction-notif','qui-reaction-notif'].forEach(id=>showReactionNotif(id,emoji,playerName));
 });
+socket.on('game_over',({scores})=>showEnd(scores));
+socket.on('player_left',()=>{ alert("L'autre joueur a quitté la partie."); goHome(); });
 
-socket.on('turn_done', ({scores})=>{
-  updateScores(scores);
-  document.getElementById('done-buttons').style.display = 'none';
-  document.getElementById('waiting-other').style.display = 'none';
-  document.getElementById('answer-zone').style.display = 'none';
-  document.getElementById('q-text').textContent = '✅ Tour terminé ! Prêts pour la suite ?';
-  document.getElementById('next-area').style.display = 'block';
-  document.getElementById('next-waiting-msg').textContent = '';
-});
-
-socket.on('next_turn', ({round, currentTurn})=>{
-  state.round = round;
-  state.currentTurn = currentTurn;
-  renderGame();
-});
-
-socket.on('game_over', ({scores})=>{
-  state.scores = scores;
-  document.getElementById('end-p1-name').textContent = state.players.p1;
-  document.getElementById('end-p2-name').textContent = state.players.p2;
-  document.getElementById('end-av1').textContent = state.players.p1[0].toUpperCase();
-  document.getElementById('end-av2').textContent = state.players.p2[0].toUpperCase();
-  document.getElementById('end-p1-score').textContent = scores.p1 + ' pts';
-  document.getElementById('end-p2-score').textContent = scores.p2 + ' pts';
-  const s1=scores.p1, s2=scores.p2;
-  let w, emoji;
-  if(s1>s2){ w=state.players.p1+' gagne !'; emoji='🏆'; }
-  else if(s2>s1){ w=state.players.p2+' gagne !'; emoji='🏆'; }
-  else { w='Égalité parfaite !'; emoji='🤝'; }
-  document.getElementById('winner-text').textContent = w;
-  document.getElementById('end-emoji').textContent = emoji;
-  showScreen('screen-end');
-});
-
-socket.on('player_left', ()=>{ alert("L'autre joueur a quitté la partie."); goHome(); });
-
-// Auto-fill code from URL
-const params = new URLSearchParams(window.location.search);
-const codeFromUrl = params.get('code');
-if(codeFromUrl){ document.getElementById('join-code').value = codeFromUrl.toUpperCase(); }
+// Auto-join via URL
+const params=new URLSearchParams(window.location.search);
+const codeFromUrl=params.get('code');
+if(codeFromUrl){
+  document.getElementById('join-code').value=codeFromUrl.toUpperCase();
+  showScreen('screen-join');
+}
 </script>
 </body>
 </html>
