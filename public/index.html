@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Action ou Vérité</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    #app {
+      width: 100%;
+      max-width: 420px;
+    }
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    h1 { font-size: 24px; font-weight: 600; color: #1a1a1a; margin-bottom: 0.25rem; }
+    h2 { font-size: 18px; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem; }
+    p { color: #666; font-size: 15px; line-height: 1.6; }
+
+    input[type=text], select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 15px;
+      outline: none;
+      margin-top: 6px;
+      transition: border 0.2s;
+      background: #fafafa;
+    }
+    input[type=text]:focus, select:focus { border-color: #7f77dd; background: #fff; }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      margin-top: 10px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: #1a1a1a; color: #fff; }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-secondary { background: transparent; color: #1a1a1a; border: 1px solid #ddd; }
+    .btn-secondary:hover { background: #f5f5f0; }
+    .btn-pink { background: #fbeaf0; color: #993556; }
+    .btn-purple { background: #eeedfe; color: #3c3489; }
+
+    .code-box {
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: 10px;
+      text-align: center;
+      padding: 1.5rem;
+      background: #f5f5f0;
+      border-radius: 12px;
+      color: #1a1a1a;
+      margin: 1rem 0;
+      font-family: monospace;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-green { background: #e1f5ee; color: #0f6e56; }
+    .badge-pink { background: #fbeaf0; color: #993556; }
+
+    .player-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 600;
+      flex-shrink: 0;
+    }
+    .av1 { background: #eeedfe; color: #3c3489; }
+    .av2 { background: #fbeaf0; color: #993556; }
+    .av-wait { background: #f0f0f0; color: #999; }
+
+    .question-card {
+      background: #f5f5f0;
+      border-radius: 14px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      margin: 1rem 0;
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .question-text {
+      font-size: 17px;
+      font-weight: 500;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+    .choice-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 1rem 0; }
+
+    .turn-info {
+      text-align: center;
+      padding: 8px;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+    .turn-info strong { color: #1a1a1a; }
+
+    .score-bar {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 14px;
+      color: #666;
+      border-bottom: 1px solid #f0f0f0;
+      margin-bottom: 0.5rem;
+    }
+    .score-bar strong { color: #1a1a1a; }
+
+    .waiting-box {
+      text-align: center;
+      padding: 2rem;
+      color: #888;
+    }
+    .waiting-box .icon { font-size: 40px; margin-bottom: 0.75rem; }
+
+    .error-msg {
+      color: #c0392b;
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .round-badge {
+      display: inline-block;
+      background: #eeedfe;
+      color: #3c3489;
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .share-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 13px;
+      color: #166534;
+      margin: 0.75rem 0;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ACCUEIL -->
+  <div class="screen active" id="screen-home">
+    <div style="text-align:center; padding: 1.5rem 0 1rem;">
+      <div style="font-size:48px; margin-bottom:0.5rem;">❤️</div>
+      <h1>Action ou Vérité</h1>
+      <p style="margin-top:0.25rem;">Joue avec qui tu veux, chacun de son côté</p>
+    </div>
+    <div class="card">
+      <label style="font-size:13px; color:#888; font-weight:500;">TON PRÉNOM</label>
+      <input type="text" id="home-name" placeholder="Ex: Charles" maxlength="20" />
+      <button class="btn btn-primary" onclick="goCreate()" style="margin-top:1.25rem;">
+        ✨ Créer une partie
+      </button>
+      <button class="btn btn-secondary" onclick="goJoin()">
+        🔗 Rejoindre avec un code
+      </button>
+    </div>
+  </div>
+
+  <!-- CRÉATION -->
+  <div class="screen" id="screen-create">
+    <h2>🎮 Nouvelle partie</h2>
+    <div class="card">
+      <p style="font-size:13px; color:#888; font-weight:500; margin-bottom:4px;">TON CODE — envoie-le à ton/ta ami(e)</p>
+      <div class="code-box" id="room-code-display">----</div>
+      <div class="share-box" id="share-url-box">Lien : <span id="share-url" style="font-weight:600;"></span></div>
+
+      <label style="font-size:13px; color:#888; font-weight:500;">AMBIANCE</label>
+      <select id="mode-select">
+        <option value="friend">😄 Entre amis — fun et léger</option>
+        <option value="crush">❤️ Rapprochement — questions intimes</option>
+        <option value="dare">🔥 Défis osés — pour les courageux</option>
+      </select>
+
+      <div style="margin-top:1rem;">
+        <div class="player-row">
+          <div class="avatar av1" id="av1-letter">C</div>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:14px;" id="p1-name-display">Toi</div>
+            <div style="font-size:12px; color:#888;">Créateur de la partie</div>
+          </div>
+          <span class="badge badge-green">Connecté</span>
+        </div>
+        <div class="player-row" id="p2-wait-row">
+          <div class="avatar av-wait pulse">⏳</div>
+          <div style="font-size:14px; color:#aaa;">En attente d'un joueur...</div>
+        </div>
+        <div class="player-row" id="p2-ready-row" style="display:none;">
+          <div class="avatar av2" id="av2-letter">?</div>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:14px;" id="p2-name-display">...</div>
+            <div style="font-size:12px; color:#888;">A rejoint !</div>
+          </div>
+          <span class="badge badge-pink">Prêt(e)</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-start" onclick="startGame()" style="display:none; margin-top:1rem;">
+        ▶️ Lancer la partie !
+      </button>
+      <button class="btn btn-secondary" onclick="goHome()">Retour</button>
+    </div>
+  </div>
+
+  <!-- REJOINDRE -->
+  <div class="screen" id="screen-join">
+    <h2>🔗 Rejoindre une partie</h2>
+    <div class="card">
+      <label style="font-size:13px; color:#888; font-weight:500;">CODE DE LA PARTIE</label>
+      <input type="text" id="join-code" placeholder="Ex: A3F7"
+        style="text-transform:uppercase; letter-spacing:6px; font-size:24px; font-family:monospace; text-align:center;"
+        maxlength="4" oninput="this.value=this.value.toUpperCase()" />
+      <div class="error-msg" id="join-error">❌ Code incorrect ou partie introuvable.</div>
+      <button class="btn btn-primary" onclick="joinGame()" style="margin-top:1rem;">
+        Rejoindre →
+      </button>
+      <button class="btn btn-secondary" onclick="goHome()">Retour</button>
+    </div>
+  </div>
+
+  <!-- ATTENTE (joueur 2) -->
+  <div class="screen" id="screen-wait">
+    <div class="card">
+      <div class="waiting-box">
+        <div class="icon">🎯</div>
+        <h2>Tu as rejoint la partie !</h2>
+        <p>En attente que l'hôte lance le jeu...</p>
+        <div class="code-box" id="wait-code-display" style="font-size:32px; margin-top:1rem;">----</div>
+        <p style="font-size:13px; margin-top:0.5rem;">Code de ta partie</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- JEU -->
+  <div class="screen" id="screen-game">
+    <div class="header-row">
+      <span class="round-badge" id="round-badge">Tour 1 / 10</span>
+      <div class="score-bar" style="border:none; margin:0; padding:0;">
+        <span><strong id="score-p1-name">J1</strong> <span id="score-p1-val">0</span></span>
+        <span style="margin:0 8px; color:#ccc;">|</span>
+        <span><strong id="score-p2-name">J2</strong> <span id="score-p2-val">0</span></span>
+      </div>
+    </div>
+
+    <div class="turn-info" id="turn-info">C'est ton tour !</div>
+
+    <div class="question-card">
+      <div class="question-text" id="question-text">Choisis : Action ou Vérité ?</div>
+    </div>
+
+    <div id="choice-buttons" class="choice-row">
+      <button class="btn btn-pink" onclick="pickType('action')">⚡ Action</button>
+      <button class="btn btn-purple" onclick="pickType('verite')">💬 Vérité</button>
+    </div>
+
+    <div id="done-buttons" style="display:none;">
+      <button class="btn btn-primary" onclick="markDone()">✅ Fait !</button>
+      <button class="btn btn-secondary" onclick="skipQ()">Passer cette question</button>
+    </div>
+
+    <div id="waiting-other" style="display:none; text-align:center; padding:1.5rem; color:#888;">
+      ⏳ En attente de <strong id="other-name"></strong>...
+    </div>
+
+    <div id="next-turn-area" style="display:none;">
+      <button class="btn btn-secondary" onclick="goNextTurn()">Tour suivant →</button>
+    </div>
+  </div>
+
+  <!-- FIN -->
+  <div class="screen" id="screen-end">
+    <div style="text-align:center; padding:1rem 0;">
+      <div style="font-size:48px;">🏆</div>
+      <h1 style="margin-top:0.5rem;">Fin de partie !</h1>
+    </div>
+    <div class="card">
+      <div class="player-row">
+        <div class="avatar av1" id="end-av1">J</div>
+        <div style="flex:1; font-weight:600;" id="end-p1-name">Joueur 1</div>
+        <div style="font-size:20px; font-weight:700; color:#0f6e56;" id="end-p1-score">0 pts</div>
+      </div>
+      <div class="player-row">
+        <div class="avatar av2" id="end-av2">J</div>
+        <div style="flex:1; font-weight:600;" id="end-p2-name">Joueur 2</div>
+        <div style="font-size:20px; font-weight:700; color:#993556;" id="end-p2-score">0 pts</div>
+      </div>
+      <div style="text-align:center; margin-top:1.25rem;">
+        <p style="font-size:18px; font-weight:600; color:#1a1a1a;" id="winner-text"></p>
+      </div>
+      <button class="btn btn-primary" onclick="goHome()" style="margin-top:1.5rem;">
+        🔄 Nouvelle partie
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const QUESTIONS = {
+  friend: {
+    action: [
+      "Fais le bruit de l'animal qui te ressemble le plus.",
+      "Montre la dernière photo prise sur ton téléphone.",
+      "Imite la voix de ton chanteur préféré pendant 30 secondes.",
+      "Envoie un message vocal ridicule à quelqu'un de tes contacts.",
+      "Poste une story bizarre sur tes réseaux maintenant.",
+      "Fais 10 squats maintenant.",
+      "Danse pendant 20 secondes sur la dernière chanson écoutée.",
+      "Appelle un ami et dis-lui que tu penses à lui sans raison.",
+      "Fais semblant de pleurer pendant 10 secondes.",
+      "Dis 3 choses que tu n'as jamais osé dire à quelqu'un."
+    ],
+    verite: [
+      "Quel est ton plus grand secret que personne ne sait ?",
+      "Quelle est la chose la plus embarrassante que tu aies faite en public ?",
+      "Quel est le mensonge dont tu es le plus fier(e) ?",
+      "Qu'est-ce qui te fait vraiment peur dans la vie ?",
+      "Qui était ton crush secret au lycée ?",
+      "Quelle est la pire chose que tu aies faite sans te faire prendre ?",
+      "Quel est ton plus grand complexe ?",
+      "Si tu pouvais effacer un souvenir, lequel ce serait ?",
+      "Quelle est la chose la plus stupide que tu aies faite par amour ?",
+      "Qui est la personne que tu as le plus déçue dans ta vie ?"
+    ]
+  },
+  crush: {
+    action: [
+      "Envoie-moi un compliment sincère en ce moment.",
+      "Dis-moi ce que tu penses vraiment de moi en 3 mots.",
+      "Raconte-moi la dernière fois que tu as pensé à moi.",
+      "Envoie-moi ta chanson préférée du moment.",
+      "Décris notre première rencontre de ton point de vue.",
+      "Dis-moi un truc que tu voulais me dire depuis longtemps.",
+      "Envoie-moi une photo de ton endroit préféré.",
+      "Décris le meilleur souvenir qu'on a ensemble.",
+      "Dis-moi quelque chose qui te fait sourire en ce moment.",
+      "Envoie-moi le dernier mème qui t'a fait rire."
+    ],
+    verite: [
+      "Qu'est-ce qui t'a attiré(e) chez moi la première fois ?",
+      "Quel moment passé avec moi tu n'oublieras jamais ?",
+      "Est-ce que tu as déjà imaginé à quoi ressemblerait notre premier rendez-vous ?",
+      "Qu'est-ce que tu penses que je ne sais pas encore sur toi ?",
+      "Quelle chanson te fait penser à moi ?",
+      "Qu'est-ce qui te rendrait heureux(se) dans une relation ?",
+      "Est-ce que tu es du genre jaloux(se) ?",
+      "Qu'est-ce que tu attends vraiment de quelqu'un ?",
+      "Quel serait le date parfait pour toi ?",
+      "Quel est ton plus grand défaut selon toi ?"
+    ]
+  },
+  dare: {
+    action: [
+      "Envoie-moi le message le plus romantique que tu puisses écrire.",
+      "Dis-moi 3 choses que tu voudrais qu'on fasse ensemble un jour.",
+      "Envoie-moi une photo de toi en ce moment sans filtre.",
+      "Envoie-moi un voice note de toi en train de chanter.",
+      "Dis-moi exactement ce que tu ressens pour moi maintenant.",
+      "Envoie-moi le message le plus long que tu puisses écrire sur moi.",
+      "Dis-moi une chose secrète que tu n'as jamais dite à personne.",
+      "Décris-moi comment tu m'imagines dans 5 ans.",
+      "Appelle-moi et dis-moi quelque chose que tu n'as jamais osé dire.",
+      "Envoie-moi le contact que tu appellerais si tu avais une urgence."
+    ],
+    verite: [
+      "Est-ce que tu as déjà eu des sentiments pour moi ? Depuis quand ?",
+      "Qu'est-ce qui t'empêche de dire vraiment ce que tu ressens ?",
+      "Quel est le truc le plus osé que tu aies jamais fait ?",
+      "Est-ce que tu rougis quand je t'écris ? Sois honnête.",
+      "Qu'est-ce qui te plaît vraiment chez moi physiquement ?",
+      "Si je te demandais de sortir avec moi, tu dirais quoi ?",
+      "Qu'est-ce que tu n'oseras jamais me dire en face ?",
+      "Tu penses à moi quand tu t'endors ?",
+      "Quel est le moment où tu as le plus voulu m'embrasser ?",
+      "Si on était seuls quelque part, qu'est-ce que tu ferais ?"
+    ]
+  }
+};
+
+const socket = io();
+let state = {
+  myName: '',
+  myId: '',
+  roomCode: '',
+  isHost: false,
+  players: { p1: '', p2: '' },
+  scores: { p1: 0, p2: 0 },
+  round: 1,
+  maxRounds: 10,
+  currentTurn: 'p1',
+  mode: 'friend',
+  usedQ: { action: [], verite: [] },
+  currentQType: ''
+};
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  location.reload();
+}
+
+function getName() {
+  return document.getElementById('home-name').value.trim();
+}
+
+function goCreate() {
+  const name = getName();
+  if (!name) { document.getElementById('home-name').focus(); return; }
+  state.myName = name;
+  state.myId = 'p1';
+  state.isHost = true;
+  state.players.p1 = name;
+  socket.emit('create_room', { name, mode: 'friend' });
+}
+
+function goJoin() {
+  const name = getName();
+  if (!name) { document.getElementById('home-name').focus(); return; }
+  state.myName = name;
+  state.myId = 'p2';
+  showScreen('screen-join');
+}
+
+function joinGame() {
+  const code = document.getElementById('join-code').value.trim().toUpperCase();
+  if (code.length !== 4) return;
+  state.roomCode = code;
+  document.getElementById('wait-code-display').textContent = code;
+  socket.emit('join_room', { name: state.myName, code });
+}
+
+function startGame() {
+  const mode = document.getElementById('mode-select').value;
+  state.mode = mode;
+  socket.emit('start_game');
+}
+
+function pickType(type) {
+  const pool = QUESTIONS[state.mode][type];
+  let available = pool.filter((_, i) => !state.usedQ[type].includes(i));
+  if (!available.length) { state.usedQ[type] = []; available = pool; }
+  const idx = Math.floor(Math.random() * pool.length);
+  state.usedQ[type].push(idx);
+  state.currentQType = type;
+  socket.emit('pick_question', { question: pool[idx], qtype: type });
+}
+
+function skipQ() {
+  pickType(state.currentQType || 'verite');
+}
+
+function markDone() {
+  socket.emit('mark_done');
+}
+
+function goNextTurn() {
+  socket.emit('next_turn');
+}
+
+function renderGame() {
+  const isMyTurn = state.currentTurn === state.myId;
+  const turnName = state.players[state.currentTurn];
+
+  document.getElementById('round-badge').textContent = `Tour ${state.round} / ${state.maxRounds}`;
+  document.getElementById('score-p1-name').textContent = state.players.p1 || 'J1';
+  document.getElementById('score-p2-name').textContent = state.players.p2 || 'J2';
+  document.getElementById('score-p1-val').textContent = state.scores.p1 + ' pts';
+  document.getElementById('score-p2-val').textContent = state.scores.p2 + ' pts';
+  document.getElementById('turn-info').textContent = isMyTurn ? "✨ C'est ton tour !" : `⏳ Tour de ${turnName}`;
+  document.getElementById('question-text').textContent = isMyTurn ? 'Choisis : Action ou Vérité ?' : `En attente du choix de ${turnName}...`;
+  document.getElementById('choice-buttons').style.display = isMyTurn ? 'grid' : 'none';
+  document.getElementById('done-buttons').style.display = 'none';
+  document.getElementById('waiting-other').style.display = 'none';
+  document.getElementById('next-turn-area').style.display = 'none';
+  document.getElementById('other-name').textContent = turnName;
+}
+
+// SOCKET EVENTS
+socket.on('room_created', ({ code }) => {
+  state.roomCode = code;
+  document.getElementById('room-code-display').textContent = code;
+  document.getElementById('p1-name-display').textContent = state.myName;
+  document.getElementById('av1-letter').textContent = state.myName[0].toUpperCase();
+  const url = window.location.origin + '?code=' + code;
+  document.getElementById('share-url').textContent = url;
+  showScreen('screen-create');
+});
+
+socket.on('player_joined', ({ p1, p2 }) => {
+  state.players = { p1, p2 };
+  document.getElementById('p2-wait-row').style.display = 'none';
+  document.getElementById('p2-ready-row').style.display = 'flex';
+  document.getElementById('p2-name-display').textContent = p2;
+  document.getElementById('av2-letter').textContent = p2[0].toUpperCase();
+  document.getElementById('btn-start').style.display = 'block';
+  if (!state.isHost) showScreen('screen-wait');
+});
+
+socket.on('join_error', ({ message }) => {
+  const el = document.getElementById('join-error');
+  el.textContent = '❌ ' + message;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+});
+
+socket.on('game_started', ({ firstTurn, mode, players }) => {
+  state.currentTurn = firstTurn;
+  state.mode = mode;
+  state.players = players;
+  state.round = 1;
+  state.scores = { p1: 0, p2: 0 };
+  state.usedQ = { action: [], verite: [] };
+  renderGame();
+  showScreen('screen-game');
+});
+
+socket.on('question_picked', ({ question, qtype }) => {
+  state.currentQType = qtype;
+  document.getElementById('question-text').textContent = question;
+  document.getElementById('choice-buttons').style.display = 'none';
+  document.getElementById('waiting-other').style.display = 'none';
+  if (state.currentTurn === state.myId) {
+    document.getElementById('done-buttons').style.display = 'block';
+  } else {
+    document.getElementById('waiting-other').style.display = 'block';
+  }
+});
+
+socket.on('turn_done', ({ scores }) => {
+  state.scores = scores;
+  document.getElementById('done-buttons').style.display = 'none';
+  document.getElementById('waiting-other').style.display = 'none';
+  document.getElementById('question-text').textContent = '✅ Tour terminé ! Prêts pour le suivant ?';
+  document.getElementById('next-turn-area').style.display = 'block';
+  document.getElementById('score-p1-val').textContent = scores.p1 + ' pts';
+  document.getElementById('score-p2-val').textContent = scores.p2 + ' pts';
+});
+
+socket.on('next_turn', ({ round, currentTurn }) => {
+  state.round = round;
+  state.currentTurn = currentTurn;
+  renderGame();
+});
+
+socket.on('game_over', ({ scores }) => {
+  state.scores = scores;
+  document.getElementById('end-p1-name').textContent = state.players.p1;
+  document.getElementById('end-p2-name').textContent = state.players.p2;
+  document.getElementById('end-av1').textContent = state.players.p1[0].toUpperCase();
+  document.getElementById('end-av2').textContent = state.players.p2[0].toUpperCase();
+  document.getElementById('end-p1-score').textContent = scores.p1 + ' pts';
+  document.getElementById('end-p2-score').textContent = scores.p2 + ' pts';
+  const s1 = scores.p1, s2 = scores.p2;
+  let w = s1 > s2 ? state.players.p1 + ' gagne ! 🏆' : s2 > s1 ? state.players.p2 + ' gagne ! 🏆' : "Égalité parfaite ! 🤝";
+  document.getElementById('winner-text').textContent = w;
+  showScreen('screen-end');
+});
+
+socket.on('player_left', () => {
+  alert("L'autre joueur a quitté la partie.");
+  goHome();
+});
+
+// Auto-fill code from URL
+const params = new URLSearchParams(window.location.search);
+const codeFromUrl = params.get('code');
+if (codeFromUrl) {
+  document.getElementById('join-code').value = codeFromUrl.toUpperCase();
+}
+</script>
+</body>
+</html>
