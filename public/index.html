@@ -926,7 +926,13 @@ const params=new URLSearchParams(window.location.search);
 const codeFromUrl=params.get('code');
 if(codeFromUrl){
   document.getElementById('join-code').value=codeFromUrl.toUpperCase();
-  showScreen('screen-join');
+  // On reste sur l'accueil pour que la personne entre son prénom d'abord
+  // Le bouton "Rejoindre avec un code" sera mis en avant
+  document.getElementById('home-name').placeholder='Entre ton prénom pour rejoindre...';
+  document.getElementById('home-name').focus();
+  // On remplace le comportement du bouton Rejoindre pour aller direct au join
+  const joinBtn=document.querySelector('button[onclick="goJoin()"]');
+  if(joinBtn){ joinBtn.textContent='🔗 Rejoindre la partie →'; joinBtn.style.background='linear-gradient(135deg,var(--accent),var(--accent2))'; joinBtn.style.color='#fff'; joinBtn.style.border='none'; }
 }
 </script>
 </body>
